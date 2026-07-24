@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="60" height="60">
+  <!-- Bookmark base -->
+  <path d="M50 50 A30 30 0 0 1 80 20 L320 20 A30 30 0 0 1 350 50 L350 450 L200 380 L50 450 Z" 
+        fill="#49A3FB" />
+<!-- 020f58 -->
+  <!-- #0026ff -->
+  <!-- Bird body -->
+  <circle cx="200" cy="200" r="120" 
+          fill="#b1d4f7" />
+  <!-- 4AA5FF -->
+  <!-- #83bdf7 -->
+  <!-- Bird face -->
+  <circle cx="160" cy="190" r="30" 
+          fill="white" /> <!-- Left eye -->
+  <circle cx="240" cy="190" r="30" 
+          fill="white" /> <!-- Right eye -->
+  
+  <!-- Eye pupils -->
+  <circle cx="160" cy="190" r="15" 
+          fill="black" />
+  <circle cx="240" cy="190" r="15" 
+          fill="black" />
+  
+  <!-- Shine in eyes -->
+  <circle cx="155" cy="185" r="5" 
+          fill="white" />
+  <circle cx="235" cy="185" r="5" 
+          fill="white" />
+  
+  <!-- Cute beak -->
+  <path d="M175 220 L200 260 L225 220 Z" 
+        fill="#FF9D00" 
+        stroke="#FF9D00" 
+        stroke-width="2" />
+  
+  <!-- Rosy cheeks -->
+  <circle cx="140" cy="220" r="15" 
+          fill="#FFB3B3" opacity="0.6" />
+  <circle cx="260" cy="220" r="15" 
+          fill="#FFB3B3" opacity="0.6" />
+</svg>

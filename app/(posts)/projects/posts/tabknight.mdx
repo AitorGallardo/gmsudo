@@ -1,0 +1,53 @@
+---
+title: "TabKnight"
+summary: "Keyboard-first tab management for Chrome — fuzzy-search every tab, preview where you're going, and jump there without leaving the page."
+tags: ["Chrome Extension", "Productivity", "Keyboard-first"]
+time:
+  created: "2026-07-23T00:00:00.000Z"
+  updated: "2026-07-24T07:52:31.581Z"
+media:
+  image: "/images/tabknight-overlay.jpg"
+pagesite:
+  url: "https://github.com/AitorGallardo/tabknight"
+hideOptions:
+  hideUpdated: true
+  hideReadingTime: true
+seo:
+  title: "TabKnight — Keyboard-first tab management for Chrome"
+  description: "Hit ⌘K, fuzzy-search every tab in every window, preview where you're headed, and jump there with Enter. Local-first, zero network requests."
+  keywords: ["chrome extension", "tab manager", "keyboard shortcuts", "productivity", "command palette"]
+---
+
+<div className="mt-8 mb-2 flex items-center gap-4">
+  <img
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/tabknight-icon.png`}
+    alt="TabKnight icon"
+    width={72}
+    height={72}
+    className="rounded-2xl"
+  />
+  <p className="m-0 font-medium">A command palette for your tabs.</p>
+</div>
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/tabknight-overlay.jpg`}
+  alt="TabKnight's ⌘K overlay — a fuzzy-searchable tab list beside a live preview pane, floating over the current page"
+/>
+
+Thirty tabs across four windows, and the one you need is somewhere in the blur. TabKnight turns Chrome's tab strip into a fast, keyboard-driven command surface: hit <kbd>⌘K</kbd> and a palette appears over your current page — fuzzy-search every tab in every window, see a real preview of where you're going, and jump there with <kbd>Enter</kbd>.
+
+# Never leave the keyboard
+
+Everything is reachable without the mouse. Arrow through matches, close or pin or mute the highlighted tab with a single chord, type `>` to filter every browser command, or drop into Audio mode to control whichever tab is making noise. The search stays focused even when focus drifts — you just type.
+
+# Sessions that survive
+
+Done with a project? Save the working set of tabs as a bookmark-backed session and restore it later — tomorrow, or on another machine. Your desk gets cleared without losing your place.
+
+# Local-first, by design
+
+Everything lives in your browser. TabKnight makes no network requests of its own, and it degrades gracefully even on Chrome's internal pages. No accounts, no tracking, no server.
+
+# Get it
+
+TabKnight is open source — TypeScript, React 18, and Bun under a Manifest V3 extension. Browse the code on [GitHub](https://github.com/AitorGallardo/tabknight).

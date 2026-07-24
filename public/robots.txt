@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://aitorgallardo.github.io/portfolio-v2/
+
+# Sitemaps
+Sitemap: https://aitorgallardo.github.io/portfolio-v2/sitemap.xml
