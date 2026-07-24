@@ -32,23 +32,9 @@ const projects = [
   {
     title: "XSaved",
     description: "The bookmark manager X never built",
-    pill: "chrome",
+    pills: ["chrome", "ios", "macos"],
     icon: "/images/xsaved-icon.png",
     href: "/projects/xsaved",
-  },
-  {
-    title: "XSaved for iOS",
-    description: "Your whole library, native in your pocket",
-    pill: "ios",
-    icon: "/images/xsaved-ios-icon.png",
-    href: "/projects/xsaved-ios",
-  },
-  {
-    title: "XSaved for Mac",
-    description: "Room to spread out, browse, and rediscover",
-    pill: "macos",
-    icon: "/images/xsaved-mac-icon.png",
-    href: "/projects/xsaved-mac",
   },
   {
     title: "TabKnight",
@@ -70,7 +56,7 @@ const lab = [
   },
   {
     title: "XSaved RAG",
-    description: "Hybrid retrieval over a bookmark corpus, with eval harness",
+    description: "Hybrid retrieval over my bookmarks, kept honest by an eval harness",
     pill: "ai",
     initials: "Rg",
     href: "https://github.com/AitorGallardo/xsaved-rag",
@@ -86,7 +72,7 @@ const lab = [
   },
   {
     title: "Megaport Visualizer",
-    description: "Interactive network topology for Megaport services",
+    description: "A live map of ports, links and cloud on-ramps",
     pill: "web",
     initials: "Mg",
     href: "https://github.com/AitorGallardo/megaport-network-visualizer",
@@ -101,14 +87,6 @@ const earlier = [
     pill: "chrome",
     icon: "/images/bbbookmarks-icon-128x128.png",
     href: "/projects/bbbookmarks",
-  },
-  {
-    title: "Artsurround",
-    description: "A little world with art as its theme",
-    pill: "web",
-    initials: "Ar",
-    href: "https://github.com/AitorGallardo/artsurround",
-    external: true,
   },
 ];
 
@@ -166,12 +144,6 @@ export default function Home() {
 
       <Socials />
 
-      <Section title="work">
-        {work.map((item) => (
-          <Row key={item.title} {...item} />
-        ))}
-      </Section>
-
       <Section title="projects">
         {projects.map((item) => (
           <Row key={item.title} {...item} />
@@ -190,6 +162,12 @@ export default function Home() {
 
       <Section title="earlier">
         {earlier.map((item) => (
+          <Row key={item.title} {...item} />
+        ))}
+      </Section>
+
+      <Section title="work">
+        {work.map((item) => (
           <Row key={item.title} {...item} />
         ))}
       </Section>

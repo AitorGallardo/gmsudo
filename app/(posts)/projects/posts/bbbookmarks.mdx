@@ -1,10 +1,10 @@
 ---
-title: "Bbbookmarks"
-summary: "A Chrome extension that revolutionizes how you manage X (formerly Twitter) bookmarks"
+title: "BBBookmarks"
+summary: "My first shot at fixing X bookmarks. It worked, it broke, and it taught me what to build next."
 tags: ["Chrome Extension", "Twitter", "Bookmarks", "Productivity"]
 time:
   created: "2024-10-18T19:24:46.167Z"
-  updated: "2026-07-24T08:28:34.898Z"
+  updated: "2026-07-24T08:28:58.748Z"
 media:
   image: "/images/Bbbookmarks-preview.png"
 pagesite:
@@ -13,99 +13,35 @@ hideOptions:
   hideUpdated: true
   hideReadingTime: true
 seo:
-  title: "Bbbookmarks - Better Twitter Bookmark Management"
-  description: "Transform how you manage your X (formerly Twitter) bookmarks with this powerful Chrome extension"
+  title: "BBBookmarks — Better X Bookmark Management"
+  description: "My first take on fixing X bookmarks: a Chrome extension that synced your saved tweets into a searchable web app."
   keywords: ["twitter bookmarks", "x bookmarks", "bookmark manager", "social media organizer"]
 ---
 
 <div className="flex items-center gap-4 mt-8 mb-8">
   <img 
     src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/bbbookmarks-icon-128x128.png`}
-    alt="Bbbookmarks Logo"
+    alt="BBBookmarks logo"
     width={64}
     height={64}
     className="rounded-xl"
   />
 </div>
 
-  <Image
-    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/webpage_screenshot_1280x800.png`}
-    alt="Bbbookmarks Web Interface"
-    className="rounded-lg shadow-lg w-full"
-  />
+BBBookmarks was my first real attempt at fixing X bookmarks, back in 2024. The idea was simple: pull your saved tweets out of that endless scroll and into a place where you could actually search and organize them.
 
-# Never Lose Another Tweet
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/webpage_screenshot_1280x800.png`}
+  alt="The BBBookmarks web interface"
+  className="rounded-lg shadow-lg w-full"
+/>
 
-Ever found yourself endlessly scrolling through your X bookmarks, trying to find that one perfect tweet you saved months ago? Bbbookmarks is your solution - a powerful app that transforms your chaotic bookmarks into an organized,
+# What it did
 
-# Key Features
+It synced your X bookmarks to a hosted web app, let you tag and sort them, and gave you full-text search — the things X still doesn't do. For a first version, it worked.
 
-## Seamless Integration
-- Automatic sync between X and Bbbookmarks.com
-- One-click bookmark saving
-- Real-time updates
+# What I got wrong
 
-## Smart Organization
-- Automatic content categorization
-- Custom tagging system
-- Smart folders and collections
-- Full-text search capabilities
+I leaned on a server and an account for everything. That meant a login to create, a backend to keep running, and a copy of your bookmarks living somewhere you didn't own. It was slower than it needed to be, more fragile than I wanted, and it asked for trust it didn't have to ask for.
 
-## Cross-Platform Access
-- Access your bookmarks anywhere
-- Offline availability
-- Bulk import/export options
-- Cross-device synchronization
-
-# Getting Started
-
-<Steps className="mt-4">
-  <Step number={1} title="Install Chrome Extension">
-    Visit the Chrome Web Store and add Bbbookmarks to your browser
-  </Step>
-  <Step number={2} title="Connect Your Accounts">
-   - Ensure you're logged into X
-   - Sign in to Bbbookmarks.com
-  </Step>
-  <Step number={3} title="Start Organizing">
-    Your bookmarks will sync automatically
-  </Step>
-</Steps>
-
-# Perfect For
-
-- Digital content curators
-- Social media managers
-- Researchers
-- News aggregators
-- Anyone seeking better bookmark organization
-
-# Privacy & Security
-
-We take your data privacy seriously:
-- Zero data storage on our servers
-- Direct sync between platforms
-- Secure OAuth authentication
-- Private bookmark management
-
-# Technical Requirements
-
-- Chrome 88+
-- Active X/Twitter account
-- Bbbookmarks account (free)
-
-# Support
-
-Need assistance? We're here to help:
-- Email: support@Bbbookmarks.com
-- Twitter: [@Bbbookmarks](https://twitter.com/Bbbookmarksapp)
-
-
-
-# Future Updates
-
-Stay tuned for exciting enhancements:
-- Time Capsule: Rediscover bookmarks with smart temporal reminders
-- Modern UI refresh with enhanced user experience
-- Advanced semantic search with natural language processing
-- AI-powered content analysis and auto-categorization
+Those lessons became XSaved: local-first, no account required, and fast because the work happens on your own machine. BBBookmarks was the rough draft. I'm glad I built it, and just as glad I moved on from it.

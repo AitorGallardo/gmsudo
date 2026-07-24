@@ -1,12 +1,12 @@
 ---
 title: "XSaved for iOS"
-summary: "Your X bookmarks, beautifully in your pocket — a fast, native iPhone app for everything you've saved."
+summary: "A native iPhone app for your X bookmarks — browse and search everything you've saved, wherever you are."
 tags: ["iOS", "iPhone", "Mobile App", "X / Twitter"]
 time:
   created: "2026-06-21T00:00:00.000Z"
-  updated: "2026-07-24T08:28:34.898Z"
+  updated: "2026-07-24T08:28:58.749Z"
 media:
-  image: "/images/xsaved_ios_icon.png"
+  image: "/images/xsaved-ios-icon.png"
 pagesite:
   url: "https://xsaved.com"
 hideOptions:
@@ -20,13 +20,13 @@ seo:
 
 <div className="mt-8 mb-2 flex items-center gap-4">
   <img
-    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved_ios_icon.png`}
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-icon.png`}
     alt="XSaved for iOS icon"
     width={72}
     height={72}
     className="rounded-2xl"
   />
-  <p className="m-0 font-medium">Your X bookmarks, beautifully in your pocket.</p>
+  <p className="m-0 font-medium">Your X bookmarks, native on iPhone.</p>
 </div>
 
 <Image
@@ -34,7 +34,7 @@ seo:
   alt="XSaved for iOS — the home feed of saved bookmarks"
 />
 
-The same bookmarks you've been saving on X, now in a fast, gorgeous app you can flick through anywhere — on the train, in line for coffee, whenever something comes to mind.
+The same bookmarks you save on X, now in a native app you can flick through anywhere.
 
 # A feed worth scrolling
 
@@ -62,6 +62,10 @@ Tap any bookmark to open it in full — the words, the media, who posted it — 
 
 Save a bookmark from the extension on your laptop and it shows up on your phone by itself — live sync keeps every device on the same page. Save from anywhere in the system with the share sheet, and keep your library one tap away with a home-screen widget.
 
+# How it's built
+
+It's a native SwiftUI app targeting iOS 26, currently in TestFlight beta. It talks to the same sync layer as the extension and the Mac app, so a bookmark saved on another device appears here on its own — no manual refresh. Saving works straight from the system share sheet, and a home-screen widget keeps the library one tap away.
+
 # On TestFlight now
 
-XSaved for iPhone is in TestFlight beta, built natively in SwiftUI for iOS 26. The XSaved Chrome extension is live today at [xsaved.com](https://xsaved.com).
+The XSaved Chrome extension is live today at [xsaved.com](https://xsaved.com), and the iPhone app is in TestFlight beta.

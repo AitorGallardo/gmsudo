@@ -11,7 +11,12 @@ interface RowProps {
   initials?: string;
   meta?: string;
   pill?: string;
+  pills?: string[];
 }
+
+const Pill = ({ children }: { children: React.ReactNode }) => (
+  <span className="shrink-0 rounded-full bg-gray-a3 px-2 py-0.5 text-gray-10 text-small">{children}</span>
+);
 
 const Tile = ({ icon, initials, title }: Pick<RowProps, "icon" | "initials" | "title">) => {
   if (icon) {
@@ -34,7 +39,7 @@ const Tile = ({ icon, initials, title }: Pick<RowProps, "icon" | "initials" | "t
   );
 };
 
-const RowBody = ({ title, description, meta, pill, icon, initials, external }: RowProps) => (
+const RowBody = ({ title, description, meta, pill, pills, icon, initials, external }: RowProps) => (
   <>
     <Tile icon={icon} initials={initials} title={title} />
     <div className="min-w-0 flex-1">
@@ -47,7 +52,15 @@ const RowBody = ({ title, description, meta, pill, icon, initials, external }: R
       {description && <p className="mt-0 truncate text-muted">{description}</p>}
     </div>
     {meta && <p className="mt-0 shrink-0 text-muted text-small">{meta}</p>}
-    {pill && <span className="shrink-0 rounded-full bg-gray-a3 px-2 py-0.5 text-gray-10 text-small">{pill}</span>}
+    {pills ? (
+      <span className="flex shrink-0 gap-1">
+        {pills.map((p) => (
+          <Pill key={p}>{p}</Pill>
+        ))}
+      </span>
+    ) : (
+      pill && <Pill>{pill}</Pill>
+    )}
   </>
 );
 

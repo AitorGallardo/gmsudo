@@ -4,9 +4,9 @@ summary: "Your whole bookmark library, native on the Mac — room to spread out,
 tags: ["macOS", "Desktop App", "Productivity", "X / Twitter"]
 time:
   created: "2026-06-20T00:00:00.000Z"
-  updated: "2026-07-24T08:28:34.898Z"
+  updated: "2026-07-24T08:28:58.749Z"
 media:
-  image: "/images/xsaved_ios_icon.png"
+  image: "/images/xsaved-mac-icon.png"
 pagesite:
   url: "https://xsaved.com"
 hideOptions:
@@ -20,7 +20,7 @@ seo:
 
 <div className="mt-8 mb-2 flex items-center gap-4">
   <img
-    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved_ios_icon.png`}
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac-icon.png`}
     alt="XSaved for Mac icon"
     width={72}
     height={72}
@@ -38,7 +38,7 @@ XSaved on the Mac gives all those saved posts a real home — a fast, native app
 
 # See the whole picture
 
-A clean dashboard shows what you've saved at a glance — how much, from whom, and the gems you'd long forgotten were even there.
+A clean dashboard shows what you've saved at a glance — how much, from whom, and plenty you'd forgotten was in there.
 
 # Browse it like it's yours
 
@@ -49,7 +49,7 @@ A clean dashboard shows what you've saved at a glance — how much, from whom, a
 
 Every bookmark in a spacious grid you can sort and filter by photos, videos, links, or author. It's your timeline, minus the noise.
 
-# Move at the speed of thought
+# Command it from the keyboard
 
 <Image
   src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved_mac_palette.webp`}
@@ -62,6 +62,10 @@ Hit a shortcut and jump straight to anything — a search, a filter, a fresh syn
 
 The folders you've made on X come along for the ride — synced into a sidebar, in the order you left them, and kept in step across the extension, your phone, and the Mac. Organize once, and it holds everywhere.
 
+# How it's built
+
+Native SwiftUI, in TestFlight beta, and it acts as the hub of the shared sync backend the other apps talk to. Folders sync from X in your own order — a folder's position is seeded from X on first import and never re-sorted on later syncs, so nothing you arranged gets shuffled. Bulk folder edits batch into single round-trips with last-write-wins semantics, so reorganizing a lot at once stays fast and predictable.
+
 # On TestFlight now
 
-XSaved for Mac is in TestFlight beta, built natively in SwiftUI for macOS — and it doubles as the sync spine of the whole XSaved family. The Chrome extension is live today at [xsaved.com](https://xsaved.com).
+The XSaved Chrome extension is live today at [xsaved.com](https://xsaved.com), and the Mac app is in TestFlight beta.
