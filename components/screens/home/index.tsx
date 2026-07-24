@@ -132,7 +132,7 @@ export default function Home() {
         <span className="text-muted">·</span> full-stack &amp; AI engineer.
       </p>
 
-      <p className="mt-5">I ship products end-to-end — product design, frontend, serverless backends, and the applied AI in between.</p>
+      <p className="mt-5">I ship products end-to-end — design, frontend, backend, and the AI in between.</p>
 
       <p className="mt-4">
         Right now I&apos;m building{" "}
@@ -142,7 +142,17 @@ export default function Home() {
         solo: a local-first, AI-organized bookmark manager for X — a Chrome extension, native iOS and Mac apps, and the sync spine behind them.
       </p>
 
-      <p className="mt-4">By day I build at Apartool. By night I build for myself.</p>
+      <p className="mt-4">
+        AI is moving faster than anything I&apos;ve seen, and I&apos;m having a great time keeping up — trying things the week they land, keeping what actually
+        works. The rest is taste: small details, fast interfaces, things that feel right. If that&apos;s your thing too,{" "}
+        <a
+          href="https://x.com/gmsudo"
+          className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10 hover:opacity-100"
+        >
+          say hi
+        </a>
+        .
+      </p>
 
       <Socials />
 
@@ -174,16 +184,8 @@ export default function Home() {
         ))}
       </Section>
 
-      <footer className="mt-14 flex items-center justify-between text-muted text-small">
+      <footer className="mt-14 text-muted text-small">
         <p>© 2026 Aitor Gallardo · @gmsudo</p>
-        <p className="flex gap-3">
-          <a href="https://aitorgallardo.github.io/portfolio-v0/" className="transition-colors hover:text-foreground hover:opacity-100">
-            v0
-          </a>
-          <a href="https://aitorgallardo.github.io/portfolio-v1/" className="transition-colors hover:text-foreground hover:opacity-100">
-            v1
-          </a>
-        </p>
       </footer>
     </div>
   );

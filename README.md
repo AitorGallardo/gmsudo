@@ -1,8 +1,33 @@
-# portfolio-v2
+<div align="center">
 
-Personal site of Aitor Gallardo ([@gmsudo](https://x.com/gmsudo)) — full-stack & AI engineer.
+# gmsudo
 
-Next.js static export, MDX project pages, Radix colors, CSS-only stagger animations. Deployed to GitHub Pages.
+**The personal site of [Aitor Gallardo](https://x.com/gmsudo) — full-stack & AI engineer.**
+
+[![Live](https://img.shields.io/badge/Live-aitorgallardo.github.io%2Fgmsudo-000000?style=for-the-badge)](https://aitorgallardo.github.io/gmsudo/)
+[![X](https://img.shields.io/badge/@gmsudo-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gmsudo)
+
+<br/>
+
+<img src=".github/assets/home-dark.jpg" alt="gmsudo — dark theme" width="800" />
+
+<sub>…and it's just as comfortable in the light.</sub>
+
+<img src=".github/assets/home-light.jpg" alt="gmsudo — light theme" width="800" />
+
+</div>
+
+## What this is
+
+One narrow column. Who I am, what I've shipped, what I'm playing with — no navigation to learn, nothing to wait for. Projects link to short case pages written in MDX.
+
+## How it's built
+
+- **Next.js** (App Router, static export) — every page is prerendered HTML
+- **MDX** case pages with view transitions between home and project
+- **Radix Colors** for a theme that works in both light and dark
+- **CSS-only stagger reveal** — content paints before JavaScript arrives, and respects `prefers-reduced-motion`
+- **Bun** for install / dev / build
 
 ```bash
 bun install
@@ -11,4 +36,12 @@ bun run build    # lint + static export to out/
 bun run deploy   # publish out/ to gh-pages
 ```
 
-Previous lives: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) · [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take).
+## Lineage
+
+This is the third life of this site: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) → [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take) → this one. Eventually it lives at **gmsudo.com**.
+
+---
+
+<div align="center">
+<sub>© 2026 Aitor Gallardo · <a href="https://x.com/gmsudo">@gmsudo</a></sub>
+</div>

@@ -1,5 +1,5 @@
 {
-  "name": "nextjs",
+  "name": "gmsudo",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
     "lint:biome": "npx biome check --fix --unsafe .",
     "lint:prettier": "npx prettier . --write --log-level warn",
     "lint": "npm run lint:style && npm run lint:prettier && npm run lint:biome",
-    "deploy": "rm -rf out/ && pnpm build && touch out/.nojekyll && npx gh-pages -d out -t true"
+    "deploy": "rm -rf out/ && bun run build && touch out/.nojekyll && bunx gh-pages -d out -t true"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.0.1",
