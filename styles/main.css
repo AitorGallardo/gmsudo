@@ -44,17 +44,35 @@
   @keyframes pulse-dot {
     0%,
     100% {
-      box-shadow: 0 0 0 0 rgb(34 197 94 / 45%);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
     }
 
     50% {
-      box-shadow: 0 0 0 4px rgb(34 197 94 / 0%);
+      box-shadow: 0 0 0 4px transparent;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .stagger > * {
       animation: reveal 0.45s cubic-bezier(0.21, 0.47, 0.32, 0.98) both;
+    }
+  }
+
+  @keyframes fade-in-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
     }
   }
 
@@ -66,7 +84,8 @@
   :root {
     --bg: var(--gray-1);
     --fg: var(--gray-12);
-    --muted: var(--gray-8);
+    --muted: var(--gray-10);
+    --accent: #16a34a;
     --border: var(--gray-4);
     --scrollbar-thumb: var(--gray-4);
     --scrollbar-track: transparent;
@@ -80,6 +99,10 @@
     --radius-small: 4px;
     --radius-base: 8px;
     --radius-large: 12px;
+  }
+
+  .dark {
+    --accent: #22c55e;
   }
 
   * {
@@ -127,7 +150,7 @@
     }
 
     a {
-      @apply transition hover:opacity-50;
+      @apply transition;
     }
 
     ol {
@@ -183,6 +206,28 @@
     pre:not(:first-child),
     figure:not(:first-child) {
       margin-top: 24px;
+    }
+
+    /*
+    * Body prose links on case pages should read as intentional links.
+    * Scoped to content containers so navigation chrome (breadcrumb,
+    * post-navigation, title link) keeps its clean, undecorated look.
+    */
+
+    p a,
+    li a,
+    blockquote a,
+    td a {
+      text-decoration-line: underline;
+      text-decoration-color: var(--gray-a6);
+      text-underline-offset: 2px;
+    }
+
+    p a:hover,
+    li a:hover,
+    blockquote a:hover,
+    td a:hover {
+      text-decoration-color: var(--gray-a10);
     }
 
     /*
@@ -361,26 +406,8 @@
     animation-delay: 0.57s;
   }
 
-  @keyframes fade-in-scale {
-    from {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
   .fade-in {
     animation: fade-in-scale 0.15s ease-out;
-  }
-
-  @keyframes blink {
-    50% {
-      opacity: 0;
-    }
   }
 
   .cursor-blink {
@@ -390,7 +417,7 @@
   .live-dot {
     width: 7px;
     height: 7px;
-    background: rgb(34 197 94);
+    background: var(--accent);
     border-radius: 9999px;
     animation: pulse-dot 2.4s ease-in-out infinite;
   }

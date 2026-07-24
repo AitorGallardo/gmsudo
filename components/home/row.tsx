@@ -65,7 +65,7 @@ const RowBody = ({ title, description, meta, pill, pills, icon, initials, extern
 );
 
 export const Row = (props: RowProps) => {
-  const className = "group -mx-3 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-gray-a2 hover:opacity-100";
+  const className = "group -mx-3 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-gray-a2";
 
   if (!props.href) {
     return (

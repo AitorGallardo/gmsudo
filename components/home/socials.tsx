@@ -51,7 +51,7 @@ export const Socials = () => (
         aria-label={link.label}
         title={link.label}
         download={link.download}
-        className="transition-colors duration-150 hover:text-foreground hover:opacity-100"
+        className="transition-colors duration-150 hover:text-foreground"
       >
         {link.icon}
       </a>

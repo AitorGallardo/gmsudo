@@ -39,7 +39,7 @@ export const Layout = ({ post, route }: Props) => {
           <h1>
             {post.title}{" "}
             {post.pagesite?.url && (
-              <a href={post.pagesite.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-muted">
+              <a href={post.pagesite.url} target="_blank" rel="noopener noreferrer" className="ml-2 text-muted transition-opacity hover:opacity-60">
                 {post.pagesite.url}
               </a>
             )}

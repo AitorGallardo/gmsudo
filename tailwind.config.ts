@@ -123,6 +123,7 @@ const config: Config = {
         background: "var(--bg)",
         foreground: "var(--fg)",
         muted: "var(--muted)",
+        accent: "var(--accent)",
         hover: "var(--hover)",
         border: "var(--border)",
         scrollbar: {

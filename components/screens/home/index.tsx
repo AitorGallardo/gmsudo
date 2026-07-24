@@ -1,4 +1,5 @@
-import { Eggs } from "@/components/home/eggs";
+import { Monogram } from "@/components/home/monogram";
+import { PaletteTrigger } from "@/components/home/palette-trigger";
 import { Row, Section } from "@/components/home/row";
 import { Socials } from "@/components/home/socials";
 import { AppThemeSwitcher } from "@/components/theme";
@@ -94,27 +95,16 @@ export default function Home() {
   return (
     <div className="stagger">
       <div className="flex items-start justify-between">
-        <div className="group flex h-10 w-10 cursor-default items-center justify-center rounded-full bg-gray-a3 font-medium text-gray-11">
-          <span className="group-hover:hidden">ag</span>
-          <span className="hidden font-mono text-small group-hover:inline">
-            $<span className="cursor-blink">_</span>
-          </span>
-        </div>
+        <Monogram />
         <div className="flex items-center gap-3 text-muted text-small">
-          <kbd className="!mx-0 hidden text-gray-9 sm:inline-block" title="try it">
-            ⌘K
-          </kbd>
+          <PaletteTrigger />
           <AppThemeSwitcher />
         </div>
       </div>
-      <Eggs />
 
       <p className="mt-8">
         <span className="font-medium">Aitor Gallardo</span> <span className="text-muted">·</span>{" "}
-        <a
-          href="https://x.com/gmsudo"
-          className="text-muted underline decoration-gray-a6 underline-offset-2 transition-colors hover:text-foreground hover:opacity-100"
-        >
+        <a href="https://x.com/gmsudo" className="text-muted underline decoration-gray-a6 underline-offset-2 transition-colors hover:text-foreground">
           @gmsudo
         </a>{" "}
         <span className="text-muted">·</span> full-stack &amp; AI engineer.
@@ -124,7 +114,7 @@ export default function Home() {
 
       <p className="mt-4">
         Right now I&apos;m building{" "}
-        <a href="https://xsaved.com" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10 hover:opacity-100">
+        <a href="https://xsaved.com" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10">
           XSaved
         </a>{" "}
         solo: a local-first, AI-organized bookmark manager for X — a Chrome extension, native iOS and Mac apps, and the sync spine behind them.
@@ -133,10 +123,7 @@ export default function Home() {
       <p className="mt-4">
         AI is moving faster than anything I&apos;ve seen, and I&apos;m having a great time keeping up — trying things the week they land, keeping what actually
         works. The rest is taste: small details, fast interfaces, things that feel right. If that&apos;s your thing too,{" "}
-        <a
-          href="https://x.com/gmsudo"
-          className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10 hover:opacity-100"
-        >
+        <a href="https://x.com/gmsudo" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10">
           say hi
         </a>
         .
@@ -148,7 +135,7 @@ export default function Home() {
         {projects.map((item) => (
           <Row key={item.title} {...item} />
         ))}
-        <a href="https://xsaved.com" className="mt-3 flex items-center gap-2.5 text-muted text-small transition-colors hover:text-foreground hover:opacity-100">
+        <a href="https://xsaved.com" className="mt-3 flex items-center gap-2.5 text-muted text-small transition-colors hover:text-foreground">
           <span className="live-dot" />
           XSaved is live on the Chrome Web Store — try it
         </a>

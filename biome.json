@@ -36,7 +36,8 @@
         "noUnusedImports": "error"
       },
       "a11y": {
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "useSemanticElements": "off"
       }
     }
   },

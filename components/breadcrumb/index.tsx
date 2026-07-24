@@ -17,7 +17,7 @@ export const Breadcrumb = () => {
 
   return (
     <div className={cn("mt-0 mb-4 flex w-full items-center gap-1 align-middle font-normal text-small")}>
-      <Link className="text-muted" href="/">
+      <Link className="text-muted transition-opacity hover:opacity-60" href="/">
         Home
       </Link>
       <ChevronRightIcon className="text-muted" />
@@ -34,7 +34,7 @@ export const Breadcrumb = () => {
             {isLast ? (
               <span className="text-muted">{path}</span>
             ) : (
-              <Link className="text-muted" href={href}>
+              <Link className="text-muted transition-opacity hover:opacity-60" href={href}>
                 {path}
               </Link>
             )}

@@ -26,13 +26,13 @@ function PostNavigation({ posts }: PostNavigationProps) {
   return (
     <div className="mt-16 flex w-full justify-between border-border border-t pt-8">
       {previous && (
-        <Link href={`${previous.slug}`} className="flex w-full flex-col gap-1 text-left">
+        <Link href={`${previous.slug}`} className="flex w-full flex-col gap-1 text-left transition-opacity hover:opacity-60">
           <span className="text-muted">Previous</span>
           <span>{previous.title}</span>
         </Link>
       )}
       {next && (
-        <Link href={`${next.slug}`} className="flex w-full flex-col gap-1 text-right">
+        <Link href={`${next.slug}`} className="flex w-full flex-col gap-1 text-right transition-opacity hover:opacity-60">
           <span className="text-muted">Next</span>
           <span>{next.title}</span>
         </Link>
