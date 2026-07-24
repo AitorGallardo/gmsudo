@@ -160,7 +160,7 @@ export default function Home() {
       </Section>
 
       <footer className="mt-14 text-muted text-small">
-        <p>© 2026 Aitor Gallardo · @gmsudo</p>
+        <p>© {new Date().getFullYear()} Aitor Gallardo · @gmsudo</p>
       </footer>
     </div>
   );

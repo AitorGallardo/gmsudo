@@ -4,8 +4,15 @@ const title = "Aitor Gallardo — full-stack & AI engineer";
 const description =
   "Aitor Gallardo (@gmsudo) ships products end-to-end. Currently building XSaved — a local-first, AI-organized bookmark manager for X across Chrome, iOS, and Mac.";
 
+// `basePath` (next.config.mjs) is automatically prepended by Next.js when it resolves
+// file-convention metadata routes (icon, opengraph-image) against `metadataBase`. Since
+// NEXT_PUBLIC_SITE_URL already includes the basePath in its path (".../gmsudo/"), using it
+// as-is here would double the segment (".../gmsudo/gmsudo/opengraph-image"). Use the origin
+// only so Next can append the basePath itself, exactly once.
+const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL).origin : undefined;
+
 export const OpenGraph: Metadata = {
-  metadataBase: process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined,
+  metadataBase: siteOrigin ? new URL(siteOrigin) : undefined,
   title: {
     default: title,
     template: "%s",
@@ -18,16 +25,14 @@ export const OpenGraph: Metadata = {
     url: process.env.NEXT_PUBLIC_SITE_URL,
     title,
     description,
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL}images/xsaved-icon.png`],
     siteName: "Aitor Gallardo",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     site: "@gmsudo",
     creator: "@gmsudo",
     title,
     description,
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL}images/xsaved-icon.png`],
   },
   robots: {
     index: true,

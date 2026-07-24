@@ -36,6 +36,12 @@ bun run build    # lint + static export to out/
 bun run deploy   # publish out/ to gh-pages
 ```
 
+## Details
+
+- **⌘K command palette** — jump to sections and projects without touching the mouse
+- **Terminal** — click the monogram to drop into a small interactive shell
+- **Lab section** — small side experiments and tools live on the home page, with a few more toys (typefall, primordia, cardstock) on the way
+
 ## Lineage
 
 This is the third life of this site: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) → [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take) → this one. Eventually it lives at **gmsudo.com**.

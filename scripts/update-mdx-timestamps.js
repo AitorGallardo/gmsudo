@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const updateTimestamps = (filePath, overrideCreated = false) => {
   const mdxContent = fs.readFileSync(filePath, "utf-8");
