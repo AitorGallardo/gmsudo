@@ -48,6 +48,27 @@ const projects = [
 
 const lab = [
   {
+    title: "Typefall",
+    description: "Type and watch the letters fall — a 3D physics toy",
+    pill: "three.js",
+    initials: "Tf",
+    href: "/projects/typefall",
+  },
+  {
+    title: "Primordia",
+    description: "A pond that thinks — tiny open-source minds in your browser",
+    pill: "ai",
+    initials: "Pr",
+    href: "/projects/primordia",
+  },
+  {
+    title: "Cardstock",
+    description: "Live HTML cards you can grab, throw, and stack",
+    pill: "canvas",
+    initials: "Cs",
+    href: "/projects/cardstock",
+  },
+  {
     title: "XSaved MCP",
     description: "Your bookmark library as tools for Claude & agents",
     pill: "mcp",

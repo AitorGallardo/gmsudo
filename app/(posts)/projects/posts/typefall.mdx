@@ -1,0 +1,63 @@
+---
+title: "Typefall"
+summary: "A keyboard-first 3D playground where every key you press falls into the scene as a physics-driven letter."
+tags: ["Three.js", "Physics", "Toy"]
+time:
+  created: "2026-07-25T00:00:00.000Z"
+  updated: "2026-07-25T00:00:00.000Z"
+media:
+  image: "/images/typefall-preview.png"
+pagesite:
+  url: "https://aitorgallardo.github.io/typefall/"
+hideOptions:
+  hideUpdated: true
+  hideReadingTime: true
+seo:
+  title: "Typefall — a keyboard-first 3D type playground"
+  description: "Press a key and watch it fall. A small three.js + cannon-es toy where letters tumble, collide, and pile up on the floor."
+  keywords: ["typefall", "three.js", "cannon-es", "physics toy", "webgl", "keyboard-first", "aitor gallardo"]
+---
+
+<Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/typefall-preview.png`} alt="3D letters tumbling and piling up on a dark floor" />
+
+Press a key, watch it fall.
+
+# What it does
+
+Every printable key you press spawns that character as a chunky 3D letter that
+drops in from above with real physics. Letters tumble, bounce, collide, and pile
+up on the floor. Type a word and hit Enter to drop the whole thing as a burst.
+Grab a letter with the pointer and throw it. Hit Escape and the floor sweeps
+clean. On a phone it opens the keyboard and taps spawn letters from `gmsudo`.
+Leave it alone and it starts typing to itself so you can see what it does.
+
+# How it's built
+
+It's three.js for rendering and cannon-es for physics, plain TypeScript, no
+framework.
+
+A couple of decisions worth calling out:
+
+- **Text geometry over an SDF text library.** I use three's `TextGeometry` with
+  a bundled bold font. It gives me actual extruded 3D letters with beveled edges
+  that catch the key light, and — more importantly — a real bounding box I can
+  hand straight to the physics engine. Each letter's collision body is a box
+  sized from that bounding box, which is cheap and stacks convincingly. The
+  geometry for each character is generated once and cached, so typing the same
+  letter again is free.
+
+- **A body cap instead of unbounded spawning.** Live physics bodies are capped
+  at around 120. When you go over, the oldest letters fade out and their bodies
+  and materials get disposed. That keeps it at 60fps on a laptop no matter how
+  long you mash the keyboard, and the loop pauses entirely when the tab is
+  hidden.
+
+- **The mobile keyboard trick.** Mobile browsers only open the soft keyboard for
+  a focused input, so there's a 1px invisible `<input>` that gets focused on tap.
+  Real keystrokes come through its `input` event; the value is read and cleared
+  each frame so it never actually holds text.
+
+# Try it
+
+- Live demo: [aitorgallardo.github.io/typefall](https://aitorgallardo.github.io/typefall/)
+- Source: [github.com/AitorGallardo/typefall](https://github.com/AitorGallardo/typefall)
