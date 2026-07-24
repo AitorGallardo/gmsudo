@@ -1,3 +1,4 @@
+import { Eggs } from "@/components/home/eggs";
 import { Row, Section } from "@/components/home/row";
 import { Socials } from "@/components/home/socials";
 import { AppThemeSwitcher } from "@/components/theme";
@@ -115,11 +116,20 @@ export default function Home() {
   return (
     <div className="stagger">
       <div className="flex items-start justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-a3 font-medium text-gray-11">ag</div>
-        <div className="text-muted text-small">
+        <div className="group flex h-10 w-10 cursor-default items-center justify-center rounded-full bg-gray-a3 font-medium text-gray-11">
+          <span className="group-hover:hidden">ag</span>
+          <span className="hidden font-mono text-small group-hover:inline">
+            $<span className="cursor-blink">_</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-muted text-small">
+          <kbd className="!mx-0 hidden text-gray-9 sm:inline-block" title="try it">
+            ⌘K
+          </kbd>
           <AppThemeSwitcher />
         </div>
       </div>
+      <Eggs />
 
       <p className="mt-8">
         <span className="font-medium">Aitor Gallardo</span> <span className="text-muted">·</span>{" "}
