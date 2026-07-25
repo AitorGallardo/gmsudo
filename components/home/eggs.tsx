@@ -1,9 +1,10 @@
 "use client";
 
+import { Play } from "@/components/home/play";
 import { Terminal } from "@/components/home/terminal";
 
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Command {
@@ -18,6 +19,7 @@ const optionId = (i: number) => `palette-option-${i}`;
 
 export const Eggs = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -41,6 +43,22 @@ export const Eggs = () => {
       hint: theme === "dark" ? "let there be light" : "back to the dark",
       run: () => setTheme(theme === "dark" ? "light" : "dark"),
     },
+    // Home-only: play mode detaches the page's rows into a physics pile.
+    ...(pathname === "/"
+      ? [
+          {
+            label: "Play with the page",
+            hint: "loosen things up",
+            run: () => {
+              if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                say("reduced motion is on — keeping things still");
+                return;
+              }
+              window.dispatchEvent(new CustomEvent("gmsudo:play"));
+            },
+          },
+        ]
+      : []),
     {
       label: "XSaved",
       hint: "project",
@@ -234,6 +252,7 @@ export const Eggs = () => {
       )}
 
       <Terminal />
+      <Play />
     </>
   );
 };

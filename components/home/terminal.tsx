@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -38,6 +38,7 @@ const HELP: string[] = [
   "ls      — list sections (try: ls projects)",
   "open    — open <xsaved|tabknight|bbbookmarks|x|github|cv>",
   "theme   — toggle light / dark",
+  "play    — loosen the page",
   "sudo    — with great power…",
   "clear   — clear the screen",
   "exit    — close",
@@ -45,6 +46,7 @@ const HELP: string[] = [
 
 export const Terminal = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
@@ -154,6 +156,20 @@ export const Terminal = () => {
         setTheme(nextTheme);
         push("out", `theme → ${nextTheme}`);
         break;
+      }
+      case "play": {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          push("out", "reduced motion is on — keeping things still");
+          break;
+        }
+        if (pathname !== "/") {
+          push("out", "nothing to play with here — go home first");
+          break;
+        }
+        window.dispatchEvent(new CustomEvent("gmsudo:play"));
+        setLines((prev) => [...prev, echo]);
+        setOpen(false);
+        return;
       }
       case "sudo": {
         const rest = args.join(" ").toLowerCase();

@@ -49,7 +49,7 @@ const projects = [
 const lab = [
   {
     title: "Typefall",
-    description: "Type and watch the letters fall — a 3D physics toy",
+    description: "A monkeytype-style typing test — rendered in 3D",
     pill: "three.js",
     initials: "Tf",
     href: "/projects/typefall",
@@ -63,7 +63,7 @@ const lab = [
   },
   {
     title: "Cardstock",
-    description: "Live HTML cards you can grab, throw, and stack",
+    description: "Physical HTML cards — the engine behind this site's play mode",
     pill: "canvas",
     initials: "Cs",
     href: "/projects/cardstock",

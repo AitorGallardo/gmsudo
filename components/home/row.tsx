@@ -69,7 +69,7 @@ export const Row = (props: RowProps) => {
 
   if (!props.href) {
     return (
-      <div className={className}>
+      <div className={className} data-play-body>
         <RowBody {...props} />
       </div>
     );
@@ -77,14 +77,14 @@ export const Row = (props: RowProps) => {
 
   if (props.external) {
     return (
-      <a href={props.href} target="_blank" rel="noreferrer" className={className}>
+      <a href={props.href} target="_blank" rel="noreferrer" className={className} data-play-body>
         <RowBody {...props} />
       </a>
     );
   }
 
   return (
-    <NextViewTransition href={props.href} className={className}>
+    <NextViewTransition href={props.href} className={className} data-play-body>
       <RowBody {...props} />
     </NextViewTransition>
   );

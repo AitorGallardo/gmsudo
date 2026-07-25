@@ -43,7 +43,7 @@ const links = [
 ];
 
 export const Socials = () => (
-  <div className="mt-6 flex items-center gap-5 text-gray-9">
+  <div className="mt-6 flex items-center gap-5 text-gray-9" data-play-body>
     {links.map((link) => (
       <a
         key={link.label}
