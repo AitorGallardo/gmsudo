@@ -453,11 +453,29 @@
   z-index: 30;
   touch-action: none;
   cursor: grab;
+  user-select: none;
   background: var(--gray-1);
   box-shadow: 0 0 0 1px var(--gray-a4), 0 10px 28px -14px var(--gray-a8);
   transform-origin: center center;
   will-change: transform;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
   backface-visibility: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+* Kill the browser's native drag/selection machinery on every descendant of a
+* pinned piece — anchors and images inside a row would otherwise start a native
+* link/image drag (the translucent ghost) and swallow all pointermove events,
+* and text inside a paragraph would begin a selection instead of a throw.
+*/
+
+.play-body * {
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
 }
 
 .play-body.play-lifted {

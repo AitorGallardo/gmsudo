@@ -1,10 +1,10 @@
 ---
 title: "Typefall"
-summary: "A monkeytype-style typing test rendered in 3D — the words float ahead as extruded letters and each correct keystroke blows one away."
+summary: "A monkeytype-style typing test rendered in 3D — the passage reads as one continuous surface and each correct keystroke sheds a flying copy of the letter you typed."
 tags: ["Three.js", "Physics", "Typing"]
 time:
   created: "2026-07-25T00:00:00.000Z"
-  updated: "2026-07-25T00:00:00.000Z"
+  updated: "2026-07-26T00:00:00.000Z"
 media:
   image: "/images/typefall-preview.png"
 pagesite:
@@ -14,7 +14,7 @@ hideOptions:
   hideReadingTime: true
 seo:
   title: "Typefall — a 3D typing test in the spirit of monkeytype"
-  description: "A monkeytype-inspired typing test rendered inside a three.js scene. Type the floating words; every correct letter detaches and flies away with the effect you chose."
+  description: "A monkeytype-inspired typing test rendered inside a three.js scene. Type the words in a measured, centered passage; every correct keystroke sheds a flying copy of the letter with the effect you chose."
   keywords: ["typefall", "typing test", "monkeytype", "three.js", "cannon-es", "webgl", "wpm", "aitor gallardo"]
 ---
 
@@ -26,19 +26,32 @@ A typing test that happens inside a 3D scene.
 
 I use monkeytype every day, so I rebuilt Typefall into the same thing — a real
 typing test — but rendered in three.js instead of on a flat page. By default it
-uses a **paragraph** view: the upcoming text is laid out as a readable wall of
-three rows facing the camera, so you can read ahead exactly like on monkeytype.
-The active word is bright with a green caret; upcoming words are dimmer; and when
-you finish the active line the whole block scrolls up smoothly — the finished
-line slides out, the next slides in. There's also a **stream** view you can
-switch to, where the words fly in from the background: the current word big and
-close, the next few receding into the dark.
+uses a **paragraph** view driven by a measured-flow layout engine: each word is
+measured by its actual glyph widths and placed one normal space after the last,
+wrapping into a centered, constrained column exactly like prose. Three lines
+stay visible so you can read ahead; the active word is bright with a thin green
+caret sitting on the next-character boundary, upcoming words are a muted gray,
+typed letters turn green and mistakes red. Finish the active line and the whole
+block scrolls up one row — the finished line fades out above, a fresh one fades
+in below. The column is derived from the camera frustum, so it keeps the same
+size and stays centered at 1024, 1440 and 1920, and recomputes on resize without
+losing your place. There's also a **stream** view you can switch to, where the
+words fly in from the background: the current word big and close, the next few
+receding into the dark.
 
-Type it. Every correct keystroke detaches that letter and fires the completion
-effect you picked — it drops and piles on the floor, bursts into particles,
-dissolves into ash, spirals off, rockets up with a green trail, or shatters into
-shards. Miss a letter and it flashes red, the camera flinches, and you stay put
-until you hit the right key — monkeytype's "stop on the letter" behaviour.
+Type it. Every correct keystroke locks that letter into place — it turns green
+and holds its slot so the passage never jumps — while a flying copy peels off
+and fires the completion effect you picked: it drops and piles on the floor,
+bursts into particles, dissolves into ash, spirals off, rockets up with a green
+trail, or shatters into shards. Miss a letter and it turns red and the caret
+moves on, monkeytype-style. A word finishes the instant you type its last letter
+right; if it's still holding a mistake, space is the advance — and any letters
+you skipped past are marked as errors, exactly like monkeytype. Backspace walks
+back through the current word restoring each letter, and steps into the previous
+word too when you left it imperfect, so you can go back and fix it. Finished
+words settle into a neutral gray while the word you're on stays bright, and
+accuracy counts every keystroke — a corrected mistake still costs you, like it
+should.
 
 There's a live WPM and accuracy readout — one quiet mono line, brighter while a
 test runs — three modes (timed 15/30/60s, a fixed 10/25/50 words, or endless

@@ -30,6 +30,7 @@ export const Play = () => {
         const mod = await import("@/lib/play");
         const handle = await mod.startPlay(() => {
           handleRef.current = null;
+          (window as unknown as { __play?: PlayHandle }).__play = undefined;
         });
         handleRef.current = handle;
         (window as unknown as { __play?: PlayHandle }).__play = handle;

@@ -28,6 +28,9 @@ export interface PlayHandle {
 const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const EXIT_MS = 450;
 const DRAG_THRESHOLD = 4;
+// Grab spring — soft enough to feel weighty, damped enough not to oscillate.
+const DRAG_STIFFNESS = 0.09;
+const DRAG_DAMPING = 0.14;
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
@@ -59,6 +62,29 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
   const docEl = document.documentElement;
   const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-play-body]"));
+
+  // A real pointer drag that starts on an anchor or image fires the browser's
+  // native drag-and-drop: a translucent link/image ghost follows the cursor and
+  // every pointermove goes dead, so the physics never sees the gesture. Marking
+  // the pieces and their descendants non-draggable — plus the capturing
+  // `dragstart` guard installed below — kills that path entirely. We also clear
+  // any live text selection so a drag over paragraph copy throws instead of
+  // highlighting.
+  const dragDisabled: { el: HTMLElement; prev: string | null }[] = [];
+  const disableNativeDrag = (root: HTMLElement) => {
+    const mark = (node: HTMLElement) => {
+      dragDisabled.push({ el: node, prev: node.getAttribute("draggable") });
+      node.setAttribute("draggable", "false");
+    };
+    mark(root);
+    for (const child of Array.from(root.querySelectorAll<HTMLElement>("a, img"))) mark(child);
+  };
+  window.getSelection?.()?.removeAllRanges();
+
+  // Suppress native drag globally while play is live (capturing, so it wins
+  // before an anchor's own handlers). Removed on teardown.
+  const onDragStart = (e: DragEvent) => e.preventDefault();
+  document.addEventListener("dragstart", onDragStart, true);
 
   // ---- lock scroll (compensating for the scrollbar so nothing shifts) -------
   const prevOverflow = docEl.style.overflow;
@@ -108,6 +134,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
     const prevStyle = el.style.cssText;
     el.classList.add("play-body");
+    disableNativeDrag(el);
     el.style.left = `${rect.left}px`;
     el.style.top = `${rect.top}px`;
     el.style.width = `${rect.width}px`;
@@ -237,6 +264,8 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   // ---- hint -----------------------------------------------------------------
   const hint = document.createElement("div");
   hint.className = "play-hint";
+  // Polite live region so a screen reader announces how to play and exit.
+  hint.setAttribute("role", "status");
   const hintLine = document.createElement("div");
   hintLine.textContent = "grab anything · esc puts everything back";
   const engineLine = document.createElement("div");
@@ -296,13 +325,16 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   // ---- dragging (spring constraint, click-safe) -----------------------------
   let drag: {
     slot: Slot;
-    constraint: MatterNamespace.Constraint;
+    constraint: MatterNamespace.Constraint | null;
     pointerId: number;
     startX: number;
     startY: number;
     active: boolean;
   } | null = null;
   let justDragged = false;
+  // The element that was just thrown; click suppression is scoped to it so an
+  // unrelated link clicked right after a throw still navigates immediately.
+  let draggedEl: HTMLElement | null = null;
   let suppressTimer = 0;
 
   const clampVelocity = (body: MatterNamespace.Body, max: number) => {
@@ -313,25 +345,25 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
   const onPointerDown = (e: PointerEvent) => {
     if (drag) return;
+    if (e.button !== 0) return; // primary button only
     const el = (e.target as HTMLElement | null)?.closest(".play-body") as HTMLElement | null;
     if (!el) return;
     const slot = slots.find((s) => s.el === el);
     if (!slot) return;
 
-    const constraint = Constraint.create({
-      pointA: { x: e.clientX, y: e.clientY },
-      bodyB: slot.body,
-      pointB: {
-        x: e.clientX - slot.body.position.x,
-        y: e.clientY - slot.body.position.y,
-      },
-      stiffness: 0.08,
-      damping: 0.16,
-      length: 0,
-    });
+    // Capture the pointer to the piece up front: a fast real drag can leave the
+    // element's box between frames, and without capture the pointermove/up
+    // events stop arriving mid-gesture (spring snaps, piece freezes or drops).
+    // Capture does not block the click that follows a plain press, so link
+    // navigation still works when the pointer never crosses the threshold.
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch {
+      /* capture not always allowed */
+    }
     drag = {
       slot,
-      constraint,
+      constraint: null,
       pointerId: e.pointerId,
       startX: e.clientX,
       startY: e.clientY,
@@ -346,45 +378,106 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       drag.active = true;
       // Wake on grab — only once the pointer has genuinely crossed the drag
       // threshold, so a plain click leaves a static piece untouched (and its
-      // link fully navigable). The spring then holds it, so it never free-falls
-      // between grab and first move.
-      Body.setStatic(drag.slot.body, false);
-      drag.slot.grabbed = true;
-      drag.slot.el.classList.add("play-lifted");
-      Composite.add(world, drag.constraint);
-      try {
-        drag.slot.el.setPointerCapture(e.pointerId);
-      } catch {
-        /* capture not always allowed */
-      }
+      // link fully navigable). Build the spring HERE, at the pointer's current
+      // position, so pointB is the exact grab point on the body: the piece
+      // tracks the cursor from this frame with no jump, then the spring holds it
+      // so it never free-falls between grab and first move.
+      const slot = drag.slot;
+      Body.setStatic(slot.body, false);
+      slot.grabbed = true;
+      slot.el.classList.add("play-lifted");
+      // pointB is the grab offset in world coordinates. matter seeds the
+      // constraint's angleB to the body's current angle at create time, so on
+      // the first solve pointB is rotated by zero and added straight to
+      // body.position — i.e. the value we pass is a world-frame offset, and the
+      // anchor lands exactly under the cursor with no initial stretch (verified:
+      // pre-rotating it into local space makes a piece grabbed at a nonzero
+      // angle swing to reorient — the opposite of what we want). matter then
+      // keeps pointB attached to the body as it spins from here.
+      const constraint = Constraint.create({
+        bodyB: slot.body,
+        pointB: {
+          x: e.clientX - slot.body.position.x,
+          y: e.clientY - slot.body.position.y,
+        },
+        stiffness: DRAG_STIFFNESS,
+        damping: DRAG_DAMPING,
+        length: 0,
+      });
+      drag.constraint = constraint;
+      Composite.add(world, constraint);
     }
-    drag.constraint.pointA = { x: e.clientX, y: e.clientY };
+    if (drag.constraint) drag.constraint.pointA = { x: e.clientX, y: e.clientY };
+    // Once engaged, stop the browser from turning the move into a scroll,
+    // selection, or gesture. Not called on pointerdown, which would break the
+    // click/focus a plain press still needs.
     e.preventDefault();
   };
 
   const endDrag = (e: PointerEvent) => {
     if (!drag || e.pointerId !== drag.pointerId) return;
+    try {
+      drag.slot.el.releasePointerCapture(e.pointerId);
+    } catch {
+      /* capture may already be gone */
+    }
     if (drag.active) {
-      Composite.remove(world, drag.constraint);
+      if (drag.constraint) Composite.remove(world, drag.constraint);
       drag.slot.grabbed = false;
       drag.slot.el.classList.remove("play-lifted");
+      // Keep the pointer-driven velocity as the throw impulse (matter carries it
+      // from the spring following the cursor), just capped so a flick can't send
+      // a piece across the room.
       clampVelocity(drag.slot.body, 24);
       justDragged = true;
+      draggedEl = drag.slot.el;
       window.clearTimeout(suppressTimer);
       suppressTimer = window.setTimeout(() => {
         justDragged = false;
+        draggedEl = null;
       }, 350);
     }
     drag = null;
   };
 
-  // Swallow the click that follows a real drag, so a thrown link doesn't fire.
+  // Swallow the click that follows a real drag, so a thrown link doesn't fire —
+  // but only when the click lands on the piece that was just thrown. An
+  // unrelated link clicked right after a throw must navigate immediately.
   const onClickCapture = (e: MouseEvent) => {
-    if (!justDragged) return;
+    if (!justDragged || !draggedEl) return;
+    const target = e.target as Node | null;
+    if (!target || !draggedEl.contains(target)) return;
     justDragged = false;
+    draggedEl = null;
     e.preventDefault();
     e.stopPropagation();
   };
+
+  // Safety net: if the browser revokes pointer capture mid-drag (lost capture,
+  // or the window losing focus during a gesture), the pointerup/cancel that
+  // would normally end the drag may never arrive — leaving `drag` set and
+  // blocking every future grab. Run the endDrag cleanup so the session can
+  // never strand itself. No throw impulse or click suppression: the gesture was
+  // interrupted, not completed.
+  const abortDrag = () => {
+    if (!drag) return;
+    try {
+      drag.slot.el.releasePointerCapture(drag.pointerId);
+    } catch {
+      /* capture may already be gone */
+    }
+    if (drag.active) {
+      if (drag.constraint) Composite.remove(world, drag.constraint);
+      drag.slot.grabbed = false;
+      drag.slot.el.classList.remove("play-lifted");
+    }
+    drag = null;
+  };
+  const onLostCapture = (e: PointerEvent) => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    abortDrag();
+  };
+  const onBlur = () => abortDrag();
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key !== "Escape") return;
@@ -414,6 +507,8 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   window.addEventListener("pointermove", onPointerMove, { passive: false });
   window.addEventListener("pointerup", endDrag);
   window.addEventListener("pointercancel", endDrag);
+  window.addEventListener("lostpointercapture", onLostCapture);
+  window.addEventListener("blur", onBlur);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("resize", onResize);
   document.addEventListener("click", onClickCapture, true);
@@ -427,12 +522,19 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", endDrag);
     window.removeEventListener("pointercancel", endDrag);
+    window.removeEventListener("lostpointercapture", onLostCapture);
+    window.removeEventListener("blur", onBlur);
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("resize", onResize);
     document.removeEventListener("click", onClickCapture, true);
+    document.removeEventListener("dragstart", onDragStart, true);
   };
 
   const hardRestore = () => {
+    for (const { el, prev } of dragDisabled) {
+      if (prev === null) el.removeAttribute("draggable");
+      else el.setAttribute("draggable", prev);
+    }
     for (const s of slots) {
       s.el.classList.remove("play-body", "play-lifted");
       s.el.style.cssText = s.prevStyle;
@@ -455,10 +557,19 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     window.clearTimeout(suppressTimer);
     if (drag) {
       try {
-        Composite.remove(world, drag.constraint);
+        drag.slot.el.releasePointerCapture(drag.pointerId);
       } catch {
-        /* already gone */
+        /* capture may already be gone */
       }
+      if (drag.constraint) {
+        try {
+          Composite.remove(world, drag.constraint);
+        } catch {
+          /* already gone */
+        }
+      }
+      drag.slot.grabbed = false;
+      drag.slot.el.classList.remove("play-lifted");
       drag = null;
     }
     removeListeners();
