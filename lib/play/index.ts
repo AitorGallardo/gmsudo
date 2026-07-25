@@ -1,9 +1,14 @@
 // Play mode — the cardstock physics concept, ported into the home page as an
 // opt-in easter egg. On activate, every home row is pinned in place with
 // position:fixed and handed to a 2D physics engine (matter-js, loaded lazily by
-// the caller). Rows tip, fall, pile up, and can be grabbed and thrown. On exit
-// they FLIP back to their exact original slots and every trace is removed, so
-// the page is pixel-identical to before.
+// the caller) as a STATIC body — so the page looks completely untouched, every
+// piece frozen in its exact layout slot, indefinitely. The only visible change
+// is the border-beams. The "woah" happens on interaction: grab a piece and it
+// wakes into a dynamic body (weighty drag, throw inertia, tilt); a moving piece
+// that strikes a resting one wakes it too and knocks it away — chain reactions
+// included. Untouched pieces never move. On exit everything FLIPs back to its
+// exact original slot (woken and never-woken alike) and every trace is removed,
+// so the page is pixel-identical to before.
 //
 // The engine module is dynamically imported the first time play activates, so
 // the normal page never pays for matter-js in its bundle.
@@ -37,13 +42,20 @@ interface Slot {
   body: MatterNamespace.Body;
   lift: number;
   grabbed: boolean;
+  // Offset of this element's fixed-positioning containing block from the
+  // viewport. Non-zero when an ancestor carries a transform/filter (the home
+  // "reveal" stagger leaves an identity transform + blur(0) behind, both of
+  // which relocate the containing block). We subtract it from left/top so a
+  // pinned piece renders pixel-exact over its original layout slot.
+  offX: number;
+  offY: number;
 }
 
 // Starts a play session. `onDispose` fires once the session has fully torn down
 // and the DOM is restored, so the caller can drop its reference.
 export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   const Matter = (await import("matter-js")).default;
-  const { Engine, Bodies, Body, Composite, Constraint, Common } = Matter;
+  const { Engine, Bodies, Body, Composite, Constraint, Events } = Matter;
 
   const docEl = document.documentElement;
   const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-play-body]"));
@@ -82,6 +94,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
   // ---- detach each row into a physics body ----------------------------------
   const slots: Slot[] = [];
+  const bodyToSlot = new Map<MatterNamespace.Body, Slot>();
   for (const el of targets) {
     const rect = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
@@ -103,17 +116,20 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
     const body = Bodies.rectangle(rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width, rect.height, {
       restitution: 0.16,
-      friction: 0.18,
+      friction: 0.32,
       frictionAir: 0.028,
       frictionStatic: 0.7,
       density: 0.0018,
       chamfer: { radius: 8 },
     });
-    Body.setAngularVelocity(body, Common.random(-0.028, 0.028));
-    Body.setVelocity(body, { x: Common.random(-0.6, 0.6), y: 0 });
+    // Create dynamic (so matter computes real mass/inertia), then pin as static.
+    // Freezing this way stores `_original`, so a later wake — grab or impact —
+    // restores the true weight and the piece falls and knocks like real card.
+    // No initial tip/velocity: the piece must sit pixel-exact in its layout slot.
+    Body.setStatic(body, true);
     Composite.add(world, body);
 
-    slots.push({
+    const slot: Slot = {
       el,
       spacer,
       prevStyle,
@@ -124,8 +140,32 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       body,
       lift: 0,
       grabbed: false,
-    });
+      offX: 0,
+      offY: 0,
+    };
+    slots.push(slot);
+    bodyToSlot.set(body, slot);
   }
+
+  // ---- wake on impact -------------------------------------------------------
+  // A dynamic (woken) piece that strikes a still-static piece brings it to
+  // life. collisionStart fires before matter's velocity solver, so flipping the
+  // struck body to dynamic in-handler lets the same-frame impulse carry it —
+  // the knock lands with weight rather than popping. Walls are static but never
+  // in `bodyToSlot`, so they never wake anything; chain reactions between pieces
+  // fall out for free (that's the woah).
+  const wake = (slot: Slot) => {
+    if (slot.body.isStatic) Body.setStatic(slot.body, false);
+  };
+  Events.on(engine, "collisionStart", (evt) => {
+    for (const pair of evt.pairs) {
+      const a = bodyToSlot.get(pair.bodyA);
+      const b = bodyToSlot.get(pair.bodyB);
+      if (!a || !b) continue; // wall/other contact — no wake
+      if (a.body.isStatic && !b.body.isStatic) wake(a);
+      else if (b.body.isStatic && !a.body.isStatic) wake(b);
+    }
+  });
 
   // ---- border beams ---------------------------------------------------------
   // A faint animated border-beam on every separated content container: the
@@ -167,11 +207,38 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   let engineText = mirror.active ? engineLabel(support) : "css transforms";
   if (support.supported && !mirror.active) engineText = "css transforms (drawElement present, mirror off)";
 
+  // ---- containing-block compensation ----------------------------------------
+  // On the CSS-transform path each piece stays in its original DOM parent, so a
+  // transformed/filtered ancestor makes `position: fixed` resolve against that
+  // ancestor's box rather than the viewport. We pin in viewport coordinates
+  // (walls and physics live there), so we measure where each fixed element
+  // actually lands and shift left/top by that offset — the piece then sits
+  // pixel-exact over its layout slot. The canvas mirror re-parents pieces into
+  // a viewport-anchored <canvas>, so it needs no compensation and is skipped.
+  const applyPin = () => {
+    if (mirror.active) return;
+    for (const s of slots) {
+      const prevTransform = s.el.style.transform;
+      s.el.style.transform = "none";
+      s.el.style.left = `${s.left}px`;
+      s.el.style.top = `${s.top}px`;
+      const r = s.el.getBoundingClientRect();
+      s.offX = r.left - s.left;
+      s.offY = r.top - s.top;
+      if (s.offX || s.offY) {
+        s.el.style.left = `${s.left - s.offX}px`;
+        s.el.style.top = `${s.top - s.offY}px`;
+      }
+      s.el.style.transform = prevTransform;
+    }
+  };
+  applyPin();
+
   // ---- hint -----------------------------------------------------------------
   const hint = document.createElement("div");
   hint.className = "play-hint";
   const hintLine = document.createElement("div");
-  hintLine.textContent = "esc puts everything back";
+  hintLine.textContent = "grab anything · esc puts everything back";
   const engineLine = document.createElement("div");
   engineLine.className = "play-hint-engine";
   engineLine.textContent = `engine: ${engineText}`;
@@ -277,6 +344,11 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     if (!drag.active) {
       if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < DRAG_THRESHOLD) return;
       drag.active = true;
+      // Wake on grab — only once the pointer has genuinely crossed the drag
+      // threshold, so a plain click leaves a static piece untouched (and its
+      // link fully navigable). The spring then holds it, so it never free-falls
+      // between grab and first move.
+      Body.setStatic(drag.slot.body, false);
       drag.slot.grabbed = true;
       drag.slot.el.classList.add("play-lifted");
       Composite.add(world, drag.constraint);
@@ -333,6 +405,8 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
         y: clamp(s.body.position.y, 20, h - 20),
       });
     }
+    // A resize can move the pieces' containing blocks, so re-measure the offset.
+    applyPin();
     dirty = window.innerWidth !== initialW || window.innerHeight !== initialH;
   };
 
