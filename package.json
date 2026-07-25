@@ -30,6 +30,7 @@
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.452.0",
     "matter-js": "^0.20.0",
+    "metal-fx": "^1.0.4",
     "next": "14.2.15",
     "next-mdx-remote": "^5.0.0",
     "next-sitemap": "^4.2.3",
