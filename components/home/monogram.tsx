@@ -11,6 +11,7 @@ export const Monogram = () => (
       onClick={() => window.dispatchEvent(new CustomEvent("gmsudo:terminal"))}
       aria-label="Open terminal"
       title="open a tiny terminal"
+      data-play-beam
       className="group relative flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full"
     >
       <img src={`${basePath}/images/gmsudo-avatar.jpg`} alt="gmsudo" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />

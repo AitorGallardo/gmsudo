@@ -25,10 +25,14 @@ A typing test that happens inside a 3D scene.
 # What it is
 
 I use monkeytype every day, so I rebuilt Typefall into the same thing — a real
-typing test — but rendered in three.js instead of on a flat page. The words you
-have to type float ahead of you as extruded 3D letters: the current word is big
-and close, the next few recede into the dark and dim out. A green caret marks
-the letter you're on.
+typing test — but rendered in three.js instead of on a flat page. By default it
+uses a **paragraph** view: the upcoming text is laid out as a readable wall of
+three rows facing the camera, so you can read ahead exactly like on monkeytype.
+The active word is bright with a green caret; upcoming words are dimmer; and when
+you finish the active line the whole block scrolls up smoothly — the finished
+line slides out, the next slides in. There's also a **stream** view you can
+switch to, where the words fly in from the background: the current word big and
+close, the next few receding into the dark.
 
 Type it. Every correct keystroke detaches that letter and fires the completion
 effect you picked — it drops and piles on the floor, bursts into particles,

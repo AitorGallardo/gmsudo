@@ -117,13 +117,14 @@ export default function Home() {
     <div className="stagger">
       <div className="flex items-start justify-between">
         <Monogram />
-        <div className="flex items-center gap-3 text-muted text-small">
+        {/* Header cluster — beams only, stays fixed and functional during play. */}
+        <div className="relative flex items-center gap-3 text-muted text-small" data-play-beam>
           <PaletteTrigger />
           <AppThemeSwitcher />
         </div>
       </div>
 
-      <p className="mt-8">
+      <p className="mt-8" data-play-body>
         <span className="font-medium">Aitor Gallardo</span> <span className="text-muted">·</span>{" "}
         <a href="https://x.com/gmsudo" className="text-muted underline decoration-gray-a6 underline-offset-2 transition-colors hover:text-foreground">
           @gmsudo
@@ -131,9 +132,11 @@ export default function Home() {
         <span className="text-muted">·</span> full-stack &amp; AI engineer.
       </p>
 
-      <p className="mt-5">I ship products end-to-end — design, frontend, backend, and the AI in between.</p>
+      <p className="mt-5" data-play-body>
+        I ship products end-to-end — design, frontend, backend, and the AI in between.
+      </p>
 
-      <p className="mt-4">
+      <p className="mt-4" data-play-body>
         Right now I&apos;m building{" "}
         <a href="https://xsaved.com" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10">
           XSaved
@@ -141,7 +144,7 @@ export default function Home() {
         solo: a local-first, AI-organized bookmark manager for X — a Chrome extension, native iOS and Mac apps, and the sync spine behind them.
       </p>
 
-      <p className="mt-4">
+      <p className="mt-4" data-play-body>
         AI is moving faster than anything I&apos;ve seen, and I&apos;m having a great time keeping up — trying things the week they land, keeping what actually
         works. The rest is taste: small details, fast interfaces, things that feel right. If that&apos;s your thing too,{" "}
         <a href="https://x.com/gmsudo" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10">
@@ -156,7 +159,7 @@ export default function Home() {
         {projects.map((item) => (
           <Row key={item.title} {...item} />
         ))}
-        <a href="https://xsaved.com" className="mt-3 flex items-center gap-2.5 text-muted text-small transition-colors hover:text-foreground">
+        <a href="https://xsaved.com" className="mt-3 flex items-center gap-2.5 text-muted text-small transition-colors hover:text-foreground" data-play-body>
           <span className="live-dot" />
           XSaved is live on the Chrome Web Store — try it
         </a>

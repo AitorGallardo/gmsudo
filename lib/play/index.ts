@@ -10,6 +10,9 @@
 
 import type MatterNamespace from "matter-js";
 
+import { CanvasMirror } from "./canvasMirror";
+import { detectHtmlInCanvas, engineLabel } from "./htmlCanvas";
+
 export interface PlayHandle {
   readonly active: boolean;
   exit: (animate?: boolean) => void;
@@ -124,13 +127,59 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     });
   }
 
+  // ---- border beams ---------------------------------------------------------
+  // A faint animated border-beam on every separated content container: the
+  // physics bodies plus the fixed header cluster. CSS-only; the element here is
+  // a pointer-events:none overlay so it never touches layout, input, or the
+  // FLIP restore. Durations and negative delays are randomised so laps don't
+  // pulse in sync.
+  const beamTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-play-body], [data-play-beam]"));
+  const beams: HTMLElement[] = [];
+  for (const el of beamTargets) {
+    const cs = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    const radius = Number.parseFloat(cs.borderTopLeftRadius) || 0;
+    const rounded = radius >= Math.min(rect.width, rect.height) / 2 - 1;
+
+    const beam = document.createElement("div");
+    beam.className = "play-beam";
+    beam.setAttribute("aria-hidden", "true");
+    beam.style.borderRadius = rounded ? "9999px" : "8px";
+    const dur = 3 + Math.random() * 3; // 3–6s per lap
+    beam.style.setProperty("--play-beam-dur", `${dur.toFixed(2)}s`);
+    beam.style.setProperty("--play-beam-delay", `-${(Math.random() * dur).toFixed(2)}s`);
+    el.appendChild(beam);
+    beams.push(beam);
+  }
+  // Commit the opacity:0 start state (a single reflow), then fade the beams in
+  // together — reflow-triggered rather than rAF-triggered so the soft appear
+  // still fires when rAF is throttled (e.g. a background tab).
+  void document.body.offsetWidth;
+  for (const b of beams) b.classList.add("play-beam-on");
+
+  // ---- html-in-canvas engine (progressive enhancement) ----------------------
+  // DOM + CSS transforms stay the source of truth for input and layout. When
+  // Chrome's html-in-canvas API is present we live-paint the physics elements
+  // through a canvas layer; any failure reverts silently to the CSS path.
+  const support = detectHtmlInCanvas();
+  const mirror = new CanvasMirror(support);
+  mirror.tryEnable(slots.map((s) => s.el));
+  let engineText = mirror.active ? engineLabel(support) : "css transforms";
+  if (support.supported && !mirror.active) engineText = "css transforms (drawElement present, mirror off)";
+
   // ---- hint -----------------------------------------------------------------
   const hint = document.createElement("div");
   hint.className = "play-hint";
-  hint.textContent = "esc puts everything back";
+  const hintLine = document.createElement("div");
+  hintLine.textContent = "esc puts everything back";
+  const engineLine = document.createElement("div");
+  engineLine.className = "play-hint-engine";
+  engineLine.textContent = `engine: ${engineText}`;
+  hint.append(hintLine, engineLine);
   document.body.appendChild(hint);
 
   // ---- render step ----------------------------------------------------------
+  const positions = new Map<HTMLElement, { x: number; y: number }>();
   const writeSlot = (s: Slot) => {
     const b = s.body;
     const target = s.grabbed ? 1 : 0;
@@ -145,16 +194,22 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     const tiltY = clamp(b.velocity.x * tiltAmt, -4, 4);
     const tiltX = clamp(-b.velocity.y * tiltAmt, -4, 4);
     const scale = 1 + s.lift * 0.018;
+    const spin =
+      `perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) ` + `rotateZ(${deg.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
 
-    s.el.style.transform =
-      `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) ` +
-      `perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) ` +
-      `rotateZ(${deg.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+    if (mirror.active) {
+      // Canvas draw handles translation; the element keeps only rotation/scale.
+      s.el.style.transform = spin;
+      positions.set(s.el, { x: s.left + dx, y: s.top + dy });
+    } else {
+      s.el.style.transform = `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) ${spin}`;
+    }
   };
 
   const step = (dt: number) => {
     Engine.update(engine, Math.min(dt, 1000 / 30));
     for (const s of slots) writeSlot(s);
+    if (mirror.active) mirror.draw(positions);
   };
   // Place everything once so there is no flash before the first frame.
   for (const s of slots) writeSlot(s);
@@ -269,6 +324,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   let dirty = false;
   const onResize = () => {
     buildWalls();
+    mirror.resize();
     const w = window.innerWidth;
     const h = window.innerHeight;
     for (const s of slots) {
@@ -308,6 +364,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       s.el.style.cssText = s.prevStyle;
       s.spacer.remove();
     }
+    for (const b of beams) b.remove();
     docEl.style.overflow = prevOverflow;
     docEl.style.paddingRight = prevPaddingRight;
     Composite.clear(world, false, true);
@@ -331,9 +388,17 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       drag = null;
     }
     removeListeners();
+
+    // Return elements to the DOM before restoring; when the canvas path was
+    // live we skip the transform animation to avoid a re-parent jump.
+    const wasCanvas = mirror.active;
+    mirror.disable();
+
+    // Fade the beams out cleanly ahead of removal.
+    for (const b of beams) b.classList.remove("play-beam-on");
     hint.remove();
 
-    if (animate && !dirty) {
+    if (animate && !dirty && !wasCanvas) {
       for (const s of slots) {
         s.el.style.transition = `transform ${EXIT_MS}ms ${EASE}`;
         s.el.style.transform = "translate3d(0px, 0px, 0) rotateZ(0deg)";

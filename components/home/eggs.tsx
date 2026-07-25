@@ -38,12 +38,8 @@ export const Eggs = () => {
   }, []);
 
   const commands: Command[] = [
-    {
-      label: "Toggle theme",
-      hint: theme === "dark" ? "let there be light" : "back to the dark",
-      run: () => setTheme(theme === "dark" ? "light" : "dark"),
-    },
-    // Home-only: play mode detaches the page's rows into a physics pile.
+    // Home-only, and deliberately first: play mode detaches the page's content
+    // blocks into a physics pile and lights up a border-beam on every one.
     ...(pathname === "/"
       ? [
           {
@@ -59,6 +55,11 @@ export const Eggs = () => {
           },
         ]
       : []),
+    {
+      label: "Toggle theme",
+      hint: theme === "dark" ? "let there be light" : "back to the dark",
+      run: () => setTheme(theme === "dark" ? "light" : "dark"),
+    },
     {
       label: "XSaved",
       hint: "project",

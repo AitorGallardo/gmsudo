@@ -474,7 +474,77 @@
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   font-size: 12px;
   color: var(--muted);
+  text-align: center;
   pointer-events: none;
   transform: translateX(-50%);
   animation: fade-in-scale 0.3s ease-out;
+}
+
+/* Second, fainter line — mirrors cardstock's engine readout. */
+
+.play-hint-engine {
+  margin-top: 2px;
+  color: var(--gray-9);
+}
+
+/*
+* Border beams — a faint 1px ring on every content container while play is
+* live, with a soft segment of accent light travelling the perimeter. The ring
+* is a masked conic-gradient rotated via an animated custom property, so it is a
+* single cheap paint per element and never touches layout or input. Radius is
+* set inline (row hover radius, or a full circle for the avatar). Honors
+* reduced motion by simply not animating — the static ring stays.
+*/
+
+@property --play-beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.play-beam {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--gray-a4);
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.play-beam.play-beam-on {
+  opacity: 1;
+}
+
+.play-beam::before {
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  content: "";
+  background: conic-gradient(
+    from var(--play-beam-angle),
+    transparent 0deg,
+    transparent 295deg,
+    color-mix(in srgb, var(--accent) 55%, transparent) 335deg,
+    color-mix(in srgb, var(--accent) 12%, transparent) 352deg,
+    transparent 360deg
+  );
+  border-radius: inherit;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .play-beam::before {
+    animation: play-beam-spin var(--play-beam-dur, 5s) linear infinite;
+    animation-delay: var(--play-beam-delay, 0s);
+  }
+}
+
+@keyframes play-beam-spin {
+  to {
+    --play-beam-angle: 360deg;
+  }
 }
