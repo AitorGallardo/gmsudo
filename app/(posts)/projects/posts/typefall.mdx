@@ -4,11 +4,11 @@ summary: "A monkeytype-style typing test rendered in 3D. The default view is an 
 tags: ["Three.js", "Physics", "Typing"]
 time:
   created: "2026-07-25T00:00:00.000Z"
-  updated: "2026-07-26T20:30:43.514Z"
+  updated: "2026-07-26T00:00:00.000Z"
 media:
   image: "/images/typefall-preview.png"
 pagesite:
-  url: "https://gmsudo.com/lab/typefall/"
+  url: "https://aitorgallardo.github.io/typefall/"
 hideOptions:
   hideUpdated: true
   hideReadingTime: true
@@ -18,30 +18,30 @@ seo:
   keywords: ["typefall", "typing test", "monkeytype", "three.js", "cannon-es", "webgl", "wpm", "star wars crawl", "aitor gallardo"]
 ---
 
-<Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/typefall-preview.png`} alt="3D letters of a word floating in a dark scene, the first letter highlighted green" />
+<Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/typefall-preview.png`} alt="3D letters of a word floating in a dark scene, a warm-gold caret on the active word" />
 
 A typing test that happens inside a 3D scene.
 
 # What it is
 
 I use monkeytype every day, so Typefall is the same thing — a real typing test —
-rendered in three.js instead of on a flat page. The default view is a **crawl**.
+rendered in three.js instead of on a flat page. The default view is **star wars**.
 The reading surface tilts back like a Star Wars opening title and the lines climb
 the plane continuously toward a horizon, shrinking and fading with distance. You
 type each line as it travels up. The active word is the one you're on; a thin
-green caret rides it up-plane every frame, lerping and blinking like monkeytype's.
-The catch is the miss line, about 60% up: if a word reaches it still untyped, it's
-marked missed — it reddens, dissolves into ash where it sits, and the passage
-moves on. So the crawl is a race against your own pace, not the clock. There's a
-**speed** setting for it — 0.8x, 1x, 1.25x, 1.6x, or **auto**, which rubber-bands
-the climb rate to your rolling WPM so the miss line always sits just behind you,
-chasing your true speed. A sparse, slow starfield sits behind it, and that's the
-whole backdrop — no lens flares, nothing loud.
+caret with a slow molten-gold sheen rides it up-plane every frame, lerping and
+blinking like monkeytype's. The catch is the miss line, about 60% up: if a word
+reaches it still untyped, it's marked missed — it reddens, dissolves into ash
+where it sits, and the passage moves on. So it's a race against your own pace, not
+the clock. There's a **speed** setting for it — 1x, 1.4x, 1.9x, 2.5x, or **auto**,
+which rubber-bands the climb rate to your rolling WPM so the miss line always sits
+just behind you, chasing your true speed. A sparse, slow starfield sits behind it,
+and that's the whole backdrop — no lens flares, nothing loud.
 
 Underneath the crawl is a measured-flow layout engine, and it also drives a
 **paragraph** view you can switch to — monkeytype's calm readable wall of rows.
 The reading surface there is flat, crisp SDF text — a real monospace typeface
-(JetBrains Mono) rendered with troika-three-text — so it reads like a proper
+(Space Mono) rendered with troika-three-text — so it reads like a proper
 typing tool rather than a row of chunky objects. Each word is measured by the
 font's real glyph advances and placed one normal space after the last, wrapping
 into a centered, constrained column exactly like prose; monospace means every row
@@ -54,27 +54,32 @@ extruded 3D letters: the current word big and close, the next few receding into
 the dark. Click away in any view and the passage dims with a small "click to
 focus" line, like the real thing.
 
-The typing is the same everywhere. Every correct keystroke locks that letter into
-place — it turns green and holds its slot so the passage never jumps — while a
-chunky extruded 3D copy peels off the glyph and fires the completion effect you
-picked: it drops and piles on the floor, bursts into particles, dissolves into
-ash, spirals off, rockets up with a green trail, or shatters into shards. Miss a
-letter and it turns red and the caret moves on, monkeytype-style. A word finishes
-the instant you type its last letter right; if it's still holding a mistake, space
-is the advance — and any letters you skipped past are marked as errors, exactly
-like monkeytype. Backspace walks back through the current word restoring each
-letter, and steps into the previous word too when you left it imperfect. Accuracy
-counts every keystroke — a corrected mistake, and every letter a crawl word left
-untyped, still costs you.
+The typing is the same everywhere, and this round changed how it feels. Every
+correct keystroke now sends that letter *out of the scene*: a chunky extruded 3D
+copy peels off and fires the completion effect you picked — it drops and piles on
+the floor, bursts into particles, dissolves into ash, spirals off, rockets up, or
+shatters into shards — while the flat surface glyph fades out of its slot. The slot
+stays reserved so the passage never jumps and the caret keeps its place, but the
+line empties behind you as you type, which is oddly satisfying. Miss a letter and
+it stays red until you fix it. A word advances on space by default — even a perfect
+one — with any letters you skipped past marked as errors, exactly like monkeytype;
+there's an **advance** setting if you'd rather it jump the instant a word is all
+correct. Backspace walks back through the current word restoring each letter (they
+fade back in as untyped gray), and steps into the previous word too when you left
+it imperfect. Accuracy counts every keystroke — a corrected mistake, and every
+letter a star-wars word left untyped, still costs you.
 
-There's a live WPM and accuracy readout — one quiet mono line, brighter while a
-test runs, with a missed counter in the crawl — three modes (timed 15/30/60s, a
-fixed 10/25/50 words, or endless zen), and a results screen with WPM, raw,
-accuracy, character counts, time, and missed. Every config keeps its own personal
-best in localStorage — mode, length and view, plus the speed setting in the crawl
-— so each setup is a separate highscore to chase; beat it and the screen calls out
-a new personal best, with your last few runs listed underneath. Restart is Tab
-then Enter, same as the muscle memory I already have.
+The accent moved to a warm gold that matches the rest of my site — the caret, the
+live WPM, the selected settings, the results, and the new-personal-best moment,
+where the score gets a single liquid-gold shimmer before it settles. Errors stay
+red; the scene stays dark. There's a live WPM and accuracy readout — one quiet mono
+line, brighter while a test runs, with a missed counter in star wars — three modes
+(timed 15/30/60s, a fixed 10/25/50 words, or endless zen), and a results screen
+with WPM, raw, accuracy, character counts, time, and missed. Every config keeps its
+own personal best in localStorage — mode, length and view, plus the speed setting
+in star wars — so each setup is a separate highscore to chase; beat it and the
+screen calls out a new personal best, with your last few runs listed underneath.
+Restart is Tab then Enter, same as the muscle memory I already have.
 
 # How it's built
 
@@ -131,5 +136,5 @@ verify it.
 
 # Try it
 
-- Live demo: [gmsudo.com/lab/typefall](https://gmsudo.com/lab/typefall/)
+- Live demo: [aitorgallardo.github.io/typefall](https://aitorgallardo.github.io/typefall/)
 - Source: [github.com/AitorGallardo/typefall](https://github.com/AitorGallardo/typefall)
