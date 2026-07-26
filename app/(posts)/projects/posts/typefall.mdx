@@ -26,22 +26,30 @@ A typing test that happens inside a 3D scene.
 
 I use monkeytype every day, so I rebuilt Typefall into the same thing — a real
 typing test — but rendered in three.js instead of on a flat page. By default it
-uses a **paragraph** view driven by a measured-flow layout engine: each word is
-measured by its actual glyph widths and placed one normal space after the last,
-wrapping into a centered, constrained column exactly like prose. Three lines
-stay visible so you can read ahead; the active word is bright with a thin green
-caret sitting on the next-character boundary, upcoming words are a muted gray,
-typed letters turn green and mistakes red. Finish the active line and the whole
-block scrolls up one row — the finished line fades out above, a fresh one fades
-in below. The column is derived from the camera frustum, so it keeps the same
-size and stays centered at 1024, 1440 and 1920, and recomputes on resize without
-losing your place. There's also a **stream** view you can switch to, where the
-words fly in from the background: the current word big and close, the next few
-receding into the dark.
+uses a **paragraph** view driven by a measured-flow layout engine. The reading
+surface itself is flat, crisp SDF text — a real monospace typeface (JetBrains
+Mono) rendered with troika-three-text — so it reads like a proper typing tool
+rather than a row of chunky objects. Each word is measured by the font's real
+glyph advances and placed one normal space after the last, wrapping into a
+centered, constrained column exactly like prose; monospace means every row lines
+up perfectly. Three lines stay visible so you can read ahead; the active word is
+brighter, upcoming words are a muted gray, typed letters turn green and mistakes
+red, finished words settle to a neutral dim. A thin green caret sits on the
+next-character boundary and behaves like monkeytype's: it smoothly lerps to the
+next slot on every keystroke and blinks at rest, pausing the blink while you
+type. Finish the active line and the whole block scrolls up one row — smoothly —
+the finished line fading out above, a fresh one fading in below. The column is
+derived from the camera frustum, so it keeps the same size and stays centered at
+1024, 1440 and 1920, and recomputes on resize without losing your place. Click
+away and the passage dims with a small "click to focus" line, just like the real
+thing. There's also a **stream** view you can switch to, where the words fly in
+from the background as chunky extruded 3D letters: the current word big and
+close, the next few receding into the dark.
 
-Type it. Every correct keystroke locks that letter into place — it turns green
-and holds its slot so the passage never jumps — while a flying copy peels off
-and fires the completion effect you picked: it drops and piles on the floor,
+Type it. Every correct keystroke locks that flat letter into place — it turns
+green and holds its slot so the passage never jumps — while a chunky extruded 3D
+copy peels off the glyph and fires the completion effect you picked: it drops and
+piles on the floor,
 bursts into particles, dissolves into ash, spirals off, rockets up with a green
 trail, or shatters into shards. Miss a letter and it turns red and the caret
 moves on, monkeytype-style. A word finishes the instant you type its last letter
@@ -63,15 +71,19 @@ Restart is Tab then Enter, same as the muscle memory I already have.
 
 # How it's built
 
-three.js for rendering, cannon-es for physics, plain TypeScript, no framework.
-The whole thing is built to hold 60fps on a laptop, which drove most of the
-decisions:
+three.js for rendering, troika-three-text for the flat reading surface,
+cannon-es for physics, plain TypeScript, no framework. The whole thing is built
+to hold 60fps on a laptop, which drove most of the decisions:
 
-- **One cached letter, reused everywhere.** Each character's `TextGeometry` is
-  generated once, on demand, and cached. Every word — current, upcoming, the
-  ones detaching mid-flight — shares those geometries; only the lightweight
-  material and transform differ per instance. Typing the same letter again costs
-  nothing.
+- **The right tool for each surface.** The paragraph you read is SDF text
+  (troika-three-text), one glyph node per character: crisp at any size, real
+  font metrics, and cheap — three full lines plus a dozen live clones measure
+  around 2ms a frame. Color changes are just a material uniform, so a keystroke
+  only recolors a glyph and nudges the caret — never a geometry rebuild. The
+  chunky 3D letters — the stream view and every clone that detaches and falls —
+  use extruded `TextGeometry`, generated once per character and cached, so those
+  bevelled glyphs are shared by every instance and typing the same letter again
+  costs nothing.
 
 - **Effects are pools, not allocations.** All the particle effects (explode,
   disintegrate, launch trails, vortex) draw from a single `THREE.Points` cloud

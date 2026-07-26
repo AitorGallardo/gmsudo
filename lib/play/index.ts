@@ -127,9 +127,25 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   buildWalls();
 
   // ---- detach each row into a physics body ----------------------------------
+  // Only pieces fully inside the CURRENT viewport at activation are converted.
+  // The arena walls sit exactly on the viewport bounds (buildWalls above), so a
+  // piece that is below/above the fold — or one that straddles a viewport edge —
+  // would overlap a static wall at spawn and get shoved by the solver, drifting
+  // with zero interaction and breaking the "page looks untouched" guarantee (the
+  // home page is taller than a laptop viewport). Scroll is locked during play,
+  // so off-screen pieces are unreachable anyway. Straddling pieces are EXCLUDED
+  // rather than included-with-a-widened-wall: that keeps the wall box exactly
+  // viewport-sized and guarantees every converted body spawns fully clear of
+  // every wall, i.e. zero at-rest movement. Excluded pieces are left completely
+  // untouched — no pin, spacer, body, drag-disable, or beam — so Esc needs to do
+  // nothing for them. A later re-activation at a different scroll offset picks
+  // the then-visible set.
+  const viewW = window.innerWidth;
+  const viewH = window.innerHeight;
   const slots: Slot[] = [];
   for (const el of targets) {
     const rect = el.getBoundingClientRect();
+    if (rect.top < 0 || rect.left < 0 || rect.bottom > viewH || rect.right > viewW) continue;
     const cs = getComputedStyle(el);
 
     const spacer = document.createElement("div");
@@ -186,7 +202,10 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   // a pointer-events:none overlay so it never touches layout, input, or the
   // FLIP restore. Durations and negative delays are randomised so laps don't
   // pulse in sync.
-  const beamTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-play-body], [data-play-beam]"));
+  // Beam only the pieces that were actually converted (off-screen pieces were
+  // skipped above and their beams would be invisible anyway) plus the fixed
+  // header cluster, which always stays on screen and functional during play.
+  const beamTargets = [...slots.map((s) => s.el), ...Array.from(document.querySelectorAll<HTMLElement>("[data-play-beam]"))];
   const beams: HTMLElement[] = [];
   for (const el of beamTargets) {
     const cs = getComputedStyle(el);
@@ -377,19 +396,30 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       const slot = drag.slot;
       slot.grabbed = true;
       slot.el.classList.add("play-lifted");
-      // pointB is the grab offset in world coordinates. matter seeds the
-      // constraint's angleB to the body's current angle at create time, so on
-      // the first solve pointB is rotated by zero and added straight to
-      // body.position — i.e. the value we pass is a world-frame offset, and the
-      // anchor lands exactly under the cursor with no initial stretch (verified:
-      // pre-rotating it into local space makes a piece grabbed at a nonzero
-      // angle swing to reorient — the opposite of what we want). matter then
-      // keeps pointB attached to the body as it spins from here.
+      // pointA is the world-space anchor the spring pulls toward — the live
+      // cursor. It MUST be supplied to Constraint.create: with no bodyA, matter
+      // 0.20 derives the constraint's rest length from `pointA` directly
+      // (Vector.sub(pointA, pointB)), so leaving it undefined throws inside
+      // create, the constraint is never built, and the spring pulls nothing.
+      //
+      // pointB is the grab offset in world coordinates, anchored to where the
+      // pointer first went down (drag.startX/startY), NOT the current pointer.
+      // The few px of travel that crossed the drag threshold are real cursor
+      // motion away from the grabbed point, so seeding pointB from the down
+      // position gives the spring that initial stretch and the piece tracks the
+      // cursor from this frame. matter seeds the constraint's angleB to the
+      // body's current angle at create time, so on the first solve pointB is
+      // rotated by zero and added straight to body.position — i.e. the value we
+      // pass is a world-frame offset (verified: pre-rotating it into local
+      // space makes a piece grabbed at a nonzero angle swing to reorient — the
+      // opposite of what we want). matter then keeps pointB attached to the
+      // body as it spins from here.
       const constraint = Constraint.create({
+        pointA: { x: e.clientX, y: e.clientY },
         bodyB: slot.body,
         pointB: {
-          x: e.clientX - slot.body.position.x,
-          y: e.clientY - slot.body.position.y,
+          x: drag.startX - slot.body.position.x,
+          y: drag.startY - slot.body.position.y,
         },
         stiffness: DRAG_STIFFNESS,
         damping: DRAG_DAMPING,
