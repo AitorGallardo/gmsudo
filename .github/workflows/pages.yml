@@ -21,28 +21,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out portfolio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check out Typefall
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: AitorGallardo/typefall
           path: labs/typefall
 
       - name: Check out Primordia
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: AitorGallardo/primordia
           path: labs/primordia
 
       - name: Check out Cardstock
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: AitorGallardo/cardstock
           path: labs/cardstock
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Install portfolio dependencies
+        run: bun install --frozen-lockfile
 
       - name: Build lab apps
         run: |
@@ -54,9 +57,7 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://gmsudo.com
           NEXT_PUBLIC_BASE_PATH: ""
-        run: |
-          bun install --frozen-lockfile
-          bun run build
+        run: bun run build
 
       - name: Add lab apps to portfolio
         run: |
