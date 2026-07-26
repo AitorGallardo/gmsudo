@@ -23,6 +23,18 @@ jobs:
       - name: Check out portfolio
         uses: actions/checkout@v5
 
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install portfolio dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build portfolio
+        env:
+          NEXT_PUBLIC_SITE_URL: https://gmsudo.com
+          NEXT_PUBLIC_BASE_PATH: ""
+        run: bun run build
+
       - name: Check out Typefall
         uses: actions/checkout@v5
         with:
@@ -41,23 +53,11 @@ jobs:
           repository: AitorGallardo/cardstock
           path: labs/cardstock
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Install portfolio dependencies
-        run: bun install --frozen-lockfile
-
       - name: Build lab apps
         run: |
           for lab in typefall primordia cardstock; do
             (cd "labs/$lab" && bun install --frozen-lockfile && bun run build)
           done
-
-      - name: Build portfolio
-        env:
-          NEXT_PUBLIC_SITE_URL: https://gmsudo.com
-          NEXT_PUBLIC_BASE_PATH: ""
-        run: bun run build
 
       - name: Add lab apps to portfolio
         run: |
