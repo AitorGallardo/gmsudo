@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://aitorgallardo.github.io/gmsudo/
+Host: https://gmsudo.com
 
 # Sitemaps
-Sitemap: https://aitorgallardo.github.io/gmsudo/sitemap.xml
+Sitemap: https://gmsudo.com/sitemap.xml

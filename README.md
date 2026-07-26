@@ -4,7 +4,7 @@
 
 **The personal site of [Aitor Gallardo](https://x.com/gmsudo) — full-stack & AI engineer.**
 
-[![Live](https://img.shields.io/badge/Live-aitorgallardo.github.io%2Fgmsudo-000000?style=for-the-badge)](https://aitorgallardo.github.io/gmsudo/)
+[![Live](https://img.shields.io/badge/Live-gmsudo.com-000000?style=for-the-badge)](https://gmsudo.com/)
 [![X](https://img.shields.io/badge/@gmsudo-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gmsudo)
 
 <br/>
@@ -44,7 +44,7 @@ bun run deploy   # publish out/ to gh-pages
 
 ## Lineage
 
-This is the third life of this site: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) → [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take) → this one. Eventually it lives at **gmsudo.com**.
+This is the third life of this site: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) → [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take) → this one, now live at **gmsudo.com**.
 
 ---
 
