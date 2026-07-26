@@ -489,7 +489,7 @@
 
 .play-hint {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
   left: 50%;
   z-index: 32;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -499,6 +499,30 @@
   pointer-events: none;
   transform: translateX(-50%);
   animation: fade-in-scale 0.3s ease-out;
+}
+
+/*
+* Touch exit affordance: mobile has no Esc, so the hint's top line becomes a
+* real tap target that puts the page back — re-enabled for pointer events over
+* the otherwise pass-through hint, styled to read as tappable without leaving
+* the quiet mono hint aesthetic.
+*/
+
+.play-hint-tap {
+  padding: 4px 10px;
+  margin: -4px -10px 0;
+  pointer-events: auto;
+  cursor: pointer;
+  border-radius: 9999px;
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--gray-a5);
+  transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.play-hint-tap:active,
+.play-hint-tap:focus-visible {
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--gray-a8);
 }
 
 /* Second, fainter line — mirrors cardstock's engine readout. */
@@ -591,5 +615,44 @@
 
   100% {
     box-shadow: inset 0 0 0 1px var(--gray-a4);
+  }
+}
+
+/*
+* iPhone / touch refinements. Unlayered and last in the file so they land above
+* Tailwind's utility layer where they must win.
+*/
+
+/* Remove the grey box iOS paints over every tapped link / button. */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+* iOS zooms the whole page when a focused field's font-size is < 16px. The
+* terminal and command-palette inputs render as small mono / UI text on the
+* desktop, so lift them to 16px only where the trap exists — coarse pointers.
+*/
+
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/*
+* Comfortable reading size on phones. The design is a flat 14px carried by
+* inheritance from <html>; lifting <body> (not the root) leaves rem-based
+* spacing and the px-scale chips / labels untouched while the prose reads a
+* notch larger, matching iOS norms without abandoning the design's restraint.
+*/
+
+@media (width <= 640px) {
+  body {
+    font-size: 15px;
+    line-height: 1.55;
   }
 }

@@ -15,7 +15,7 @@ interface RowProps {
 }
 
 const Pill = ({ children }: { children: React.ReactNode }) => (
-  <span className="shrink-0 rounded-full bg-gray-a3 px-2 py-0.5 text-gray-10 text-small">{children}</span>
+  <span className="shrink-0 rounded-full bg-gray-a3 px-2 py-0.5 text-gray-10 text-small leading-5">{children}</span>
 );
 
 const Tile = ({ icon, initials, title }: Pick<RowProps, "icon" | "initials" | "title">) => {
@@ -46,14 +46,24 @@ const RowBody = ({ title, description, meta, pill, pills, icon, initials, extern
       <p className="flex items-center gap-1 truncate">
         {title}
         {external && (
-          <span className="-translate-x-0.5 text-gray-8 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">↗</span>
+          // Hidden until hover on pointer devices; touch has no hover, so it
+          // stays faintly present there as the "opens externally" cue.
+          <span className="-translate-x-0.5 text-gray-8 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 [@media(hover:none)]:translate-x-0 [@media(hover:none)]:opacity-60">
+            ↗
+          </span>
         )}
       </p>
       {description && <p className="mt-0 truncate text-muted">{description}</p>}
     </div>
     {meta && <p className="mt-0 shrink-0 text-muted text-small">{meta}</p>}
+    {/*
+     * A multi-tag row (XSaved) would squeeze its description into an ugly
+     * two-word truncation on a phone, so those tags drop to their own line,
+     * indented under the title. A single tag is compact enough to stay inline
+     * on the right at every width, keeping the row a tidy two lines.
+     */}
     {pills ? (
-      <span className="flex shrink-0 gap-1">
+      <span className="flex shrink-0 gap-1 max-sm:basis-full max-sm:justify-start max-sm:pt-1 max-sm:pl-[44px]">
         {pills.map((p) => (
           <Pill key={p}>{p}</Pill>
         ))}
@@ -65,7 +75,10 @@ const RowBody = ({ title, description, meta, pill, pills, icon, initials, extern
 );
 
 export const Row = (props: RowProps) => {
-  const className = "group -mx-3 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-gray-a2";
+  // Multi-tag rows wrap their tags to a second line on phones (see RowBody);
+  // single-tag and meta-only rows stay a single tidy line.
+  const wrap = props.pills ? "max-sm:flex-wrap" : "";
+  const className = `group -mx-3 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-gray-a2 active:bg-gray-a2 ${wrap}`;
 
   if (!props.href) {
     return (

@@ -37,6 +37,7 @@ const HELP: string[] = [
   "whoami  — who's behind this",
   "ls      — list sections (try: ls projects)",
   "open    — open <xsaved|tabknight|bbbookmarks|x|github|cv>",
+  "palette — open the command palette",
   "theme   — toggle light / dark",
   "play    — loosen the page",
   "sudo    — with great power…",
@@ -53,6 +54,11 @@ export const Terminal = () => {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [histIndex, setHistIndex] = useState<number | null>(null);
+  // On mobile the sheet is pinned to the bottom of the layout viewport, which
+  // the iOS soft keyboard slides *over*. We ride the sheet above the keyboard by
+  // offsetting its `bottom` by the visual-viewport overlap. Desktop keeps its
+  // class-driven position (offset stays 0, so the inline value is a no-op).
+  const [kbInset, setKbInset] = useState(0);
 
   const idRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +106,30 @@ export const Terminal = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [lines, open]);
+
+  // Keep the sheet above the soft keyboard (mobile only). visualViewport reports
+  // the region not covered by the keyboard; the overlap is what we lift by.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!open || !vv) return;
+    const isMobile = window.matchMedia("(max-width: 639px)").matches;
+    if (!isMobile) {
+      setKbInset(0);
+      return;
+    }
+    const update = () => {
+      const overlap = window.innerHeight - (vv.height + vv.offsetTop);
+      setKbInset(Math.max(0, Math.round(overlap)));
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      setKbInset(0);
+    };
+  }, [open]);
 
   const run = (raw: string) => {
     const echo = make("prompt", `$ ${raw}`);
@@ -156,6 +186,14 @@ export const Terminal = () => {
         setTheme(nextTheme);
         push("out", `theme → ${nextTheme}`);
         break;
+      }
+      case "palette": {
+        // The command palette has no on-screen entry point on touch (⌘K is
+        // hidden there), so the terminal is the gateway: close, then open it.
+        setLines((prev) => [...prev, echo, make("out", "opening palette…")]);
+        setOpen(false);
+        window.dispatchEvent(new CustomEvent("gmsudo:palette"));
+        return;
       }
       case "play": {
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -244,11 +282,17 @@ export const Terminal = () => {
         role="dialog"
         aria-modal="true"
         aria-label="Terminal"
+        style={{ bottom: kbInset || undefined }}
         className="fade-in fixed inset-x-0 bottom-0 z-50 flex max-h-[70vh] flex-col rounded-t-large border border-border bg-background font-mono text-small shadow-2xl sm:inset-x-auto sm:top-20 sm:bottom-auto sm:left-6 sm:w-[360px] sm:rounded-large"
       >
         <div className="flex items-center justify-between border-border border-b px-3 py-2">
           <span className="text-muted">aitor@gmsudo:~</span>
-          <button type="button" onClick={close} aria-label="Close terminal" className="text-muted transition-colors hover:text-foreground">
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close terminal"
+            className="-my-2 -mr-1.5 flex h-10 w-10 items-center justify-center text-base text-muted leading-none transition-colors hover:text-foreground active:text-foreground max-sm:h-[44px] max-sm:w-[44px]"
+          >
             ×
           </button>
         </div>
@@ -261,7 +305,7 @@ export const Terminal = () => {
           ))}
         </div>
 
-        <form onSubmit={onSubmit} className="flex items-center gap-2 border-border border-t px-3 py-2">
+        <form onSubmit={onSubmit} className="flex items-center gap-2 border-border border-t px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:pb-2">
           <span className="text-accent">$</span>
           <input
             ref={inputRef}
@@ -272,7 +316,7 @@ export const Terminal = () => {
             autoComplete="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="flex-1 bg-transparent text-foreground outline-none placeholder:text-muted"
+            className="min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted"
           />
         </form>
       </div>

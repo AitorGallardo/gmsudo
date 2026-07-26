@@ -25,7 +25,7 @@ export const Monogram = () => (
       aria-label="Open terminal"
       title="open a tiny terminal"
       data-play-beam
-      className="group relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full p-[3px]"
+      className="group relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full p-[3px] max-sm:h-[44px] max-sm:w-[44px]"
     >
       <span className="relative block h-full w-full overflow-hidden rounded-full">
         <img src={`${basePath}/images/gmsudo-avatar.jpg`} alt="gmsudo" width={38} height={38} className="h-full w-full rounded-full object-cover" />

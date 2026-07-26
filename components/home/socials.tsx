@@ -43,7 +43,10 @@ const links = [
 ];
 
 export const Socials = () => (
-  <div className="mt-6 flex items-center gap-5 text-gray-9" data-play-body>
+  // Icons stay visually tight (gap ~20px), but each hit area is a full 44px
+  // square on touch — the negative margin absorbs the padding so the row does
+  // not grow or shift. -webkit-tap-highlight-color is cleared globally.
+  <div className="-mx-2.5 mt-6 flex items-center gap-1 text-gray-9" data-play-body>
     {links.map((link) => (
       <a
         key={link.label}
@@ -51,7 +54,7 @@ export const Socials = () => (
         aria-label={link.label}
         title={link.label}
         download={link.download}
-        className="transition-colors duration-150 hover:text-foreground"
+        className="flex h-[44px] min-w-[44px] items-center justify-center px-2.5 transition-colors duration-150 hover:text-foreground active:text-foreground"
       >
         {link.icon}
       </a>

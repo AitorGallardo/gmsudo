@@ -192,7 +192,7 @@ export const Eggs = () => {
       {open && (
         // biome-ignore lint/a11y/useKeyWithClickEvents: backdrop dismiss duplicates the Escape handler on the input
         <div
-          className="fade-in fixed inset-0 z-50 flex items-start justify-center bg-black-a6 pt-[18vh]"
+          className="fade-in fixed inset-0 z-50 flex items-start justify-center bg-black-a6 px-4 pt-[18vh]"
           onClick={(e) => {
             if (e.target === e.currentTarget) setOpen(false);
           }}
@@ -235,10 +235,10 @@ export const Eggs = () => {
                     command.run();
                   }}
                   onMouseEnter={() => setIndex(i)}
-                  className={`flex w-full items-center justify-between px-4 py-2 text-left transition-colors ${i === index ? "bg-gray-a3" : ""}`}
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-2 text-left transition-colors max-sm:py-3 ${i === index ? "bg-gray-a3" : ""}`}
                 >
-                  <span>{command.label}</span>
-                  <span className="text-muted text-small">{command.hint}</span>
+                  <span className="min-w-0 truncate">{command.label}</span>
+                  <span className="shrink-0 text-muted text-small">{command.hint}</span>
                 </button>
               ))}
             </div>
@@ -247,7 +247,7 @@ export const Eggs = () => {
       )}
 
       {toast && (
-        <output className="-translate-x-1/2 fade-in fixed bottom-8 left-1/2 z-50 block rounded-[8px] border border-border bg-background px-3.5 py-2 font-mono text-small shadow-lg">
+        <output className="-translate-x-1/2 fade-in fixed bottom-[calc(2rem+env(safe-area-inset-bottom))] left-1/2 z-50 block rounded-[8px] border border-border bg-background px-3.5 py-2 font-mono text-small shadow-lg">
           {toast}
         </output>
       )}
