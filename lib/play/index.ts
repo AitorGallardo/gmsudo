@@ -280,14 +280,26 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   if (support.supported && !mirror.active) engineText = "css transforms (drawElement present, mirror off)";
 
   // ---- hint -----------------------------------------------------------------
+  // Touch devices have no Esc key and no `g`, so the hint doubles as the exit
+  // control there: the top line becomes a real tap target that puts everything
+  // back. Pointer devices keep the original keyboard-worded, non-interactive
+  // hint. Wired to `exit` further down, once it is defined.
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   const hint = document.createElement("div");
   hint.className = "play-hint";
   hint.setAttribute("role", "status");
   const hintLine = document.createElement("div");
-  hintLine.textContent = "grab anything · g toggles gravity · esc puts everything back";
   const engineLine = document.createElement("div");
   engineLine.className = "play-hint-engine";
   engineLine.textContent = `engine: ${engineText}`;
+  if (coarse) {
+    hintLine.className = "play-hint-tap";
+    hintLine.setAttribute("role", "button");
+    hintLine.setAttribute("tabindex", "0");
+    hintLine.textContent = "drag anything around · tap here to put it all back";
+  } else {
+    hintLine.textContent = "grab anything · g toggles gravity · esc puts everything back";
+  }
   hint.append(hintLine, engineLine);
   document.body.appendChild(hint);
 
@@ -755,6 +767,21 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
   const exit = (animate = true) => teardown(animate);
   const destroy = () => teardown(false);
+
+  // Touch exit: tapping (or activating with Enter/Space) the hint puts the page
+  // back — the mobile equivalent of Esc.
+  if (coarse) {
+    const tapExit = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      exit(true);
+    };
+    hintLine.addEventListener("click", tapExit);
+    hintLine.addEventListener("keydown", (e) => {
+      const key = (e as KeyboardEvent).key;
+      if (key === "Enter" || key === " ") tapExit(e);
+    });
+  }
 
   return {
     get active() {
