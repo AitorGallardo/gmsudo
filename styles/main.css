@@ -443,14 +443,17 @@
 }
 
 /*
-* Play mode — the home rows, detached into a physics pile. Geometry (left/top/
-* width/height) is set inline per element; this only carries the shared look.
-* Unlayered on purpose so it lands above Tailwind's utility layer.
+* Play mode — the home rows, detached into a physics pile inside a body-level
+* overlay. Pieces are position:absolute in DOCUMENT coordinates (left/top/width/
+* height set inline per element), so native scroll reaches every one of them;
+* this rule only carries the shared look. Unlayered on purpose so it lands above
+* Tailwind's utility layer.
 */
 
 .play-body {
-  position: fixed;
+  position: absolute;
   z-index: 30;
+  pointer-events: auto;
   touch-action: none;
   cursor: grab;
   user-select: none;
@@ -564,5 +567,29 @@
 @keyframes play-beam-spin {
   to {
     --play-beam-angle: 360deg;
+  }
+}
+
+/*
+* Home-dock confirmation — one soft accent pulse on a piece's beam when it eases
+* back into its home slot. One-shot; the class is removed after it plays so it
+* can retrigger on the next dock.
+*/
+
+.play-beam.play-beam-dock {
+  animation: play-beam-pulse 600ms ease-out 1;
+}
+
+@keyframes play-beam-pulse {
+  0% {
+    box-shadow: inset 0 0 0 1px var(--gray-a4);
+  }
+
+  40% {
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 14px -2px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  100% {
+    box-shadow: inset 0 0 0 1px var(--gray-a4);
   }
 }
