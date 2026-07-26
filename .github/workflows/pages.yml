@@ -1,0 +1,82 @@
+name: Deploy portfolio and labs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out portfolio
+        uses: actions/checkout@v4
+
+      - name: Check out Typefall
+        uses: actions/checkout@v4
+        with:
+          repository: AitorGallardo/typefall
+          path: labs/typefall
+
+      - name: Check out Primordia
+        uses: actions/checkout@v4
+        with:
+          repository: AitorGallardo/primordia
+          path: labs/primordia
+
+      - name: Check out Cardstock
+        uses: actions/checkout@v4
+        with:
+          repository: AitorGallardo/cardstock
+          path: labs/cardstock
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Build lab apps
+        run: |
+          for lab in typefall primordia cardstock; do
+            (cd "labs/$lab" && bun install --frozen-lockfile && bun run build)
+          done
+
+      - name: Build portfolio
+        env:
+          NEXT_PUBLIC_SITE_URL: https://gmsudo.com
+          NEXT_PUBLIC_BASE_PATH: ""
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+
+      - name: Add lab apps to portfolio
+        run: |
+          for lab in typefall primordia cardstock; do
+            mkdir -p "out/lab/$lab"
+            cp -R "labs/$lab/dist/." "out/lab/$lab/"
+          done
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

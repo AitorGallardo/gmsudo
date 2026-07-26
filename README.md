@@ -33,14 +33,17 @@ One narrow column. Who I am, what I've shipped, what I'm playing with — no nav
 bun install
 bun run dev      # local dev
 bun run build    # lint + static export to out/
-bun run deploy   # publish out/ to gh-pages
 ```
+
+Pushes to `main` publish the portfolio and the three lab apps together through
+GitHub Pages. The deployment workflow checks out each lab repository, builds it
+with its `/lab/...` base path, and adds it to the final static export.
 
 ## Details
 
 - **⌘K command palette** — jump to sections and projects without touching the mouse
 - **Terminal** — click the monogram to drop into a small interactive shell
-- **Lab section** — small side experiments and tools live on the home page, with a few more toys (typefall, primordia, cardstock) on the way
+- **Lab section** — small side experiments and tools live alongside the portfolio at `/lab/typefall`, `/lab/primordia`, and `/lab/cardstock`
 
 ## Lineage
 
