@@ -1,14 +1,16 @@
-// Play mode — the cardstock physics concept, ported into the home page as an
-// opt-in easter egg. On activate, every home row is pinned in place with
-// position:fixed and handed to a 2D physics engine (matter-js, loaded lazily by
-// the caller) as a STATIC body — so the page looks completely untouched, every
-// piece frozen in its exact layout slot, indefinitely. The only visible change
-// is the border-beams. The "woah" happens on interaction: grab a piece and it
-// wakes into a dynamic body (weighty drag, throw inertia, tilt); a moving piece
-// that strikes a resting one wakes it too and knocks it away — chain reactions
-// included. Untouched pieces never move. On exit everything FLIPs back to its
-// exact original slot (woken and never-woken alike) and every trace is removed,
-// so the page is pixel-identical to before.
+// Play mode — a faithful port of the cardstock demo's physics engine
+// (../../cardstock/src/main.ts) into the home page as an opt-in easter egg. On
+// activate, every home row is pinned in place with position:fixed and handed to
+// a 2D physics engine (matter-js, loaded lazily by the caller) as a fully
+// DYNAMIC body. The engine runs in zero gravity (gravity.y = 0), so a piece
+// spawned with zero velocity sits exactly in its layout slot indefinitely — the
+// page still looks completely untouched (the only visible change is the
+// border-beams). But every piece is LIVE from the first frame: grab any piece
+// and drag it anywhere on the page, throw it and it caroms off the walls and off
+// the other pieces, which get batted around too — chain reactions included, just
+// like cardstock. Press 'g' to toggle real gravity on: everything falls and
+// piles. On exit everything FLIPs back to its exact original layout slot and
+// every trace is removed, so the page is pixel-identical to before.
 //
 // The engine module is dynamically imported the first time play activates, so
 // the normal page never pays for matter-js in its bundle.
@@ -58,7 +60,7 @@ interface Slot {
 // and the DOM is restored, so the caller can drop its reference.
 export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   const Matter = (await import("matter-js")).default;
-  const { Engine, Bodies, Body, Composite, Constraint, Events } = Matter;
+  const { Engine, Bodies, Body, Composite, Constraint } = Matter;
 
   const docEl = document.documentElement;
   const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-play-body]"));
@@ -97,8 +99,14 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   const initialH = window.innerHeight;
 
   // ---- engine ---------------------------------------------------------------
+  // Zero-g by default (cardstock main.ts lines 19-21). With zero initial
+  // velocity every dynamic piece stays put in its layout slot; 'g' toggles the
+  // real fall on. gravity.scale scales the per-tick pull so the gravity-on feel
+  // matches cardstock exactly.
   const engine = Engine.create();
-  engine.gravity.y = 1; // light, calm fall
+  engine.gravity.x = 0;
+  engine.gravity.y = 0;
+  engine.gravity.scale = 0.0011;
   const world = engine.world;
 
   let walls: MatterNamespace.Body[] = [];
@@ -107,7 +115,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     const t = 240;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const opts = { isStatic: true, restitution: 0.2, friction: 0.4 };
+    const opts = { isStatic: true, restitution: 0.6, friction: 0.05 };
     walls = [
       Bodies.rectangle(w / 2, -t / 2, w + t * 2, t, opts),
       Bodies.rectangle(w / 2, h + t / 2, w + t * 2, t, opts),
@@ -120,7 +128,6 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
   // ---- detach each row into a physics body ----------------------------------
   const slots: Slot[] = [];
-  const bodyToSlot = new Map<MatterNamespace.Body, Slot>();
   for (const el of targets) {
     const rect = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
@@ -141,19 +148,19 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     el.style.height = `${rect.height}px`;
     el.style.setProperty("margin", "0", "important");
 
+    // Cardstock's piece material, verbatim (main.ts lines 62-70). The body is
+    // fully dynamic from creation — no static pinning. In zero-g with zero
+    // initial velocity matter integrates nothing, so it sits pixel-exact in its
+    // layout slot until a grab, a collision, or gravity moves it. No initial
+    // tip/velocity, so the resting page looks untouched.
     const body = Bodies.rectangle(rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width, rect.height, {
-      restitution: 0.16,
-      friction: 0.32,
-      frictionAir: 0.028,
-      frictionStatic: 0.7,
-      density: 0.0018,
-      chamfer: { radius: 8 },
+      restitution: 0.55,
+      friction: 0.08,
+      frictionAir: 0.014,
+      frictionStatic: 0.4,
+      density: 0.0016,
+      chamfer: { radius: 12 },
     });
-    // Create dynamic (so matter computes real mass/inertia), then pin as static.
-    // Freezing this way stores `_original`, so a later wake — grab or impact —
-    // restores the true weight and the piece falls and knocks like real card.
-    // No initial tip/velocity: the piece must sit pixel-exact in its layout slot.
-    Body.setStatic(body, true);
     Composite.add(world, body);
 
     const slot: Slot = {
@@ -171,28 +178,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       offY: 0,
     };
     slots.push(slot);
-    bodyToSlot.set(body, slot);
   }
-
-  // ---- wake on impact -------------------------------------------------------
-  // A dynamic (woken) piece that strikes a still-static piece brings it to
-  // life. collisionStart fires before matter's velocity solver, so flipping the
-  // struck body to dynamic in-handler lets the same-frame impulse carry it —
-  // the knock lands with weight rather than popping. Walls are static but never
-  // in `bodyToSlot`, so they never wake anything; chain reactions between pieces
-  // fall out for free (that's the woah).
-  const wake = (slot: Slot) => {
-    if (slot.body.isStatic) Body.setStatic(slot.body, false);
-  };
-  Events.on(engine, "collisionStart", (evt) => {
-    for (const pair of evt.pairs) {
-      const a = bodyToSlot.get(pair.bodyA);
-      const b = bodyToSlot.get(pair.bodyB);
-      if (!a || !b) continue; // wall/other contact — no wake
-      if (a.body.isStatic && !b.body.isStatic) wake(a);
-      else if (b.body.isStatic && !a.body.isStatic) wake(b);
-    }
-  });
 
   // ---- border beams ---------------------------------------------------------
   // A faint animated border-beam on every separated content container: the
@@ -267,7 +253,7 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   // Polite live region so a screen reader announces how to play and exit.
   hint.setAttribute("role", "status");
   const hintLine = document.createElement("div");
-  hintLine.textContent = "grab anything · esc puts everything back";
+  hintLine.textContent = "grab anything · g toggles gravity · esc puts everything back";
   const engineLine = document.createElement("div");
   engineLine.className = "play-hint-engine";
   engineLine.textContent = `engine: ${engineText}`;
@@ -275,6 +261,12 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   document.body.appendChild(hint);
 
   // ---- render step ----------------------------------------------------------
+  const clampVelocity = (body: MatterNamespace.Body, max: number) => {
+    const v = body.velocity;
+    const s = Math.hypot(v.x, v.y);
+    if (s > max) Body.setVelocity(body, { x: (v.x / s) * max, y: (v.y / s) * max });
+  };
+
   const positions = new Map<HTMLElement, { x: number; y: number }>();
   const writeSlot = (s: Slot) => {
     const b = s.body;
@@ -285,13 +277,14 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     const dy = b.position.y - s.height / 2 - s.top;
     const deg = (b.angle * 180) / Math.PI;
 
-    // Subtle velocity tilt — cardstock's feel, dialled way down.
-    const tiltAmt = 0.22 + s.lift * 0.5;
-    const tiltY = clamp(b.velocity.x * tiltAmt, -4, 4);
-    const tiltX = clamp(-b.velocity.y * tiltAmt, -4, 4);
-    const scale = 1 + s.lift * 0.018;
+    // Velocity-based tilt for a pseudo-3D feel — cardstock's presentation,
+    // verbatim (main.ts lines 245-249): stronger while lifted, ±9deg clamp.
+    const tiltAmt = 0.35 + s.lift * 0.9;
+    const tiltY = clamp(b.velocity.x * tiltAmt, -9, 9);
+    const tiltX = clamp(-b.velocity.y * tiltAmt, -9, 9);
+    const scale = 1 + s.lift * 0.045;
     const spin =
-      `perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) ` + `rotateZ(${deg.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+      `perspective(720px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) ` + `rotateZ(${deg.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
 
     if (mirror.active) {
       // Canvas draw handles translation; the element keeps only rotation/scale.
@@ -304,7 +297,12 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
 
   const step = (dt: number) => {
     Engine.update(engine, Math.min(dt, 1000 / 30));
-    for (const s of slots) writeSlot(s);
+    for (const s of slots) {
+      // Keep runaway bodies sane even without a grab (cardstock main.ts line
+      // 240) — a hard carom or a wall bounce can never fling a piece offscreen.
+      if (!s.grabbed) clampVelocity(s.body, 40);
+      writeSlot(s);
+    }
     if (mirror.active) mirror.draw(positions);
   };
   // Place everything once so there is no flash before the first frame.
@@ -336,12 +334,6 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   // unrelated link clicked right after a throw still navigates immediately.
   let draggedEl: HTMLElement | null = null;
   let suppressTimer = 0;
-
-  const clampVelocity = (body: MatterNamespace.Body, max: number) => {
-    const v = body.velocity;
-    const s = Math.hypot(v.x, v.y);
-    if (s > max) Body.setVelocity(body, { x: (v.x / s) * max, y: (v.y / s) * max });
-  };
 
   const onPointerDown = (e: PointerEvent) => {
     if (drag) return;
@@ -376,14 +368,13 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
     if (!drag.active) {
       if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < DRAG_THRESHOLD) return;
       drag.active = true;
-      // Wake on grab — only once the pointer has genuinely crossed the drag
-      // threshold, so a plain click leaves a static piece untouched (and its
-      // link fully navigable). Build the spring HERE, at the pointer's current
-      // position, so pointB is the exact grab point on the body: the piece
-      // tracks the cursor from this frame with no jump, then the spring holds it
-      // so it never free-falls between grab and first move.
+      // The spring is built only once the pointer has genuinely crossed the drag
+      // threshold, so a plain click never engages it and leaves the piece exactly
+      // where it sits (link fully navigable, position delta 0). Build the spring
+      // HERE, at the pointer's current position, so pointB is the exact grab
+      // point on the body: the piece tracks the cursor from this frame with no
+      // jump, then the spring holds it so it never drifts between grab and move.
       const slot = drag.slot;
-      Body.setStatic(slot.body, false);
       slot.grabbed = true;
       slot.el.classList.add("play-lifted");
       // pointB is the grab offset in world coordinates. matter seeds the
@@ -427,8 +418,8 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
       drag.slot.el.classList.remove("play-lifted");
       // Keep the pointer-driven velocity as the throw impulse (matter carries it
       // from the spring following the cursor), just capped so a flick can't send
-      // a piece across the room.
-      clampVelocity(drag.slot.body, 24);
+      // a piece across the room (cardstock main.ts line 180).
+      clampVelocity(drag.slot.body, 26);
       justDragged = true;
       draggedEl = drag.slot.el;
       window.clearTimeout(suppressTimer);
@@ -479,11 +470,39 @@ export async function startPlay(onDispose: () => void): Promise<PlayHandle> {
   };
   const onBlur = () => abortDrag();
 
+  // ---- gravity toggle -------------------------------------------------------
+  // 'g' flips real gravity on/off (cardstock main.ts lines 202-216). On, every
+  // piece falls and piles; off, back to the zero-g rest. gravity.scale (set on
+  // the engine) shapes the fall so the feel matches cardstock. When turning on
+  // we give each body a tiny downward nudge so nothing lingers weightless.
+  let gravityOn = false;
+  const setGravity = (on: boolean) => {
+    gravityOn = on;
+    engine.gravity.y = on ? 1 : 0;
+    if (on)
+      for (const s of slots)
+        Body.applyForce(s.body, s.body.position, {
+          x: 0,
+          y: 0.0006 * s.body.mass,
+        });
+  };
+  // A key event is "typing" when it targets a text input (cardstock's isTyping)
+  // — and, our equivalent guard, whenever the command palette or terminal modal
+  // is open (both render a role="dialog" and steal focus into an <input>).
+  const isTyping = (e: KeyboardEvent) => {
+    const t = e.target as HTMLElement | null;
+    return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+  };
+  const modalOpen = () => !!document.querySelector('[role="dialog"]');
+
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== "Escape") return;
-    const t = document.activeElement as HTMLElement | null;
-    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
-    exit(true);
+    if (e.key === "Escape") {
+      const t = document.activeElement as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      exit(true);
+      return;
+    }
+    if (e.key.toLowerCase() === "g" && !isTyping(e) && !modalOpen()) setGravity(!gravityOn);
   };
 
   let dirty = false;
