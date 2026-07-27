@@ -1,10 +1,10 @@
 ---
 title: "Typefall"
-summary: "A monkeytype-style typing test rendered in 3D. The default view is an opening crawl: the passage tilts back and climbs toward a horizon, and you type each line before it slips past the miss line — a race against your own pace."
+summary: "A monkeytype-style typing test rendered in 3D. The default view is a survival crawl: a Star Wars opening title that types itself, climbing toward a horizon — the moment one word reaches the top the stars stretch into hyperspace and you retry. How far you got, not how fast."
 tags: ["Three.js", "Physics", "Typing"]
 time:
   created: "2026-07-25T00:00:00.000Z"
-  updated: "2026-07-26T00:00:00.000Z"
+  updated: "2026-07-27T00:00:00.000Z"
 media:
   image: "/images/typefall-preview.png"
 pagesite:
@@ -14,8 +14,8 @@ hideOptions:
   hideReadingTime: true
 seo:
   title: "Typefall — a 3D typing test in the spirit of monkeytype"
-  description: "A monkeytype-inspired typing test rendered inside a three.js scene. The default view is an opening crawl that tilts back and climbs toward a horizon; type each line before it passes the miss line. Every correct keystroke sheds a flying copy of the letter with the effect you chose."
-  keywords: ["typefall", "typing test", "monkeytype", "three.js", "cannon-es", "webgl", "wpm", "star wars crawl", "aitor gallardo"]
+  description: "A monkeytype-inspired typing test rendered inside a three.js scene. The default view is a survival crawl that types Star-Wars-flavored lines and climbs toward a horizon; the moment one word reaches the top the stars stretch into a hyperspace jump and you run it again. Every correct keystroke sheds a flying copy of the letter with the effect you chose."
+  keywords: ["typefall", "typing test", "monkeytype", "three.js", "cannon-es", "webgl", "wpm", "survival", "star wars crawl", "hyperspace", "aitor gallardo"]
 ---
 
 <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/typefall-preview.png`} alt="3D letters of a word floating in a dark scene, a warm-gold caret on the active word" />
@@ -25,18 +25,32 @@ A typing test that happens inside a 3D scene.
 # What it is
 
 I use monkeytype every day, so Typefall is the same thing — a real typing test —
-rendered in three.js instead of on a flat page. The default view is **star wars**.
-The reading surface tilts back like a Star Wars opening title and the lines climb
-the plane continuously toward a horizon, shrinking and fading with distance. You
-type each line as it travels up. The active word is the one you're on; a thin
-caret with a slow molten-gold sheen rides it up-plane every frame, lerping and
-blinking like monkeytype's. The catch is the miss line, about 60% up: if a word
-reaches it still untyped, it's marked missed — it reddens, dissolves into ash
-where it sits, and the passage moves on. So it's a race against your own pace, not
-the clock. There's a **speed** setting for it — 1x, 1.4x, 1.9x, 2.5x, or **auto**,
-which rubber-bands the climb rate to your rolling WPM so the miss line always sits
-just behind you, chasing your true speed. A sparse, slow starfield sits behind it,
-and that's the whole backdrop — no lens flares, nothing loud.
+rendered in three.js instead of on a flat page. The default view is **star wars**,
+and this round turned it into the game. It's a survival run. The reading surface
+tilts back like a Star Wars opening title and, instead of random words, it types
+short Star-Wars-flavored lines — a handful of iconic catchphrases and a set of
+crawl lines I wrote myself, about rebellions and star systems and fallen empires,
+shuffled fresh each run. It sits frozen with a quiet "type to begin" until your
+first keystroke, then the lines start climbing toward a horizon, shrinking and
+fading with distance. You type each line as it travels up. The active word carries
+a thin caret with a slow molten-gold sheen that rides it up-plane every frame,
+lerping and blinking like monkeytype's. There's no miss-and-continue anymore: the
+moment one word reaches the top zone, the run is over. The stars behind stretch
+into a hyperspace jump — the whole field of dots draws out into radial light
+streaks and rushes past, the crawl streaks away with them, one faint gold flash —
+and it settles to a restrained lose card: how many words you survived, your WPM,
+your best at that speed. Then you're one key from going again, and the crawl is
+frozen and waiting. The retry has no friction on purpose; it should feel like
+pulling a slot machine.
+
+A **speed** setting sets the climb rate — 1x, 1.4x, 1.9x, 2.5x, or **auto**, which
+rubber-bands the climb to your rolling WPM so the line always sits just behind you,
+chasing your true speed. Each speed keeps its own best, scored by words survived
+rather than WPM — the game changed, so those bests start fresh. The backdrop is a
+DOM/SVG starfield now, sitting behind a transparent WebGL canvas: a hundred-odd
+tiny dotted stars in two parallax layers, cold-white with a few faint gold, on a
+slow staggered twinkle — no lens flares, nothing loud. It's what stretches into
+the hyperspace streaks when you lose.
 
 Underneath the crawl is a measured-flow layout engine, and it also drives a
 **paragraph** view you can switch to — monkeytype's calm readable wall of rows.
@@ -51,8 +65,11 @@ column is derived from the camera frustum, so it keeps its size and stays center
 at 1024, 1440 and 1920 and recomputes on resize without losing your place. There's
 also a **stream** view, where the words fly in from the background as chunky
 extruded 3D letters: the current word big and close, the next few receding into
-the dark. Click away in any view and the passage dims with a small "click to
-focus" line, like the real thing.
+the dark; it always auto-advances, so it never needs a space, which suits a
+phone. Paragraph and stream carry their own faint backdrops too — a dust-and-
+vignette layer for paragraph, a depth haze for stream — pitched well below the
+text so they never compete. Click away in any view and the passage dims with a
+small "click to focus" line, like the real thing.
 
 The typing is the same everywhere, and this round changed how it feels. Every
 correct keystroke now sends that letter *out of the scene*: a chunky extruded 3D
@@ -69,17 +86,20 @@ fade back in as untyped gray), and steps into the previous word too when you lef
 it imperfect. Accuracy counts every keystroke — a corrected mistake, and every
 letter a star-wars word left untyped, still costs you.
 
-The accent moved to a warm gold that matches the rest of my site — the caret, the
-live WPM, the selected settings, the results, and the new-personal-best moment,
-where the score gets a single liquid-gold shimmer before it settles. Errors stay
-red; the scene stays dark. There's a live WPM and accuracy readout — one quiet mono
-line, brighter while a test runs, with a missed counter in star wars — three modes
-(timed 15/30/60s, a fixed 10/25/50 words, or endless zen), and a results screen
-with WPM, raw, accuracy, character counts, time, and missed. Every config keeps its
-own personal best in localStorage — mode, length and view, plus the speed setting
-in star wars — so each setup is a separate highscore to chase; beat it and the
-screen calls out a new personal best, with your last few runs listed underneath.
-Restart is Tab then Enter, same as the muscle memory I already have.
+The accent is a warm gold that matches the rest of my site — the caret, the live
+WPM, the selected settings, the results, and the new-best moment, where the score
+gets a single liquid-gold shimmer before it settles. Errors stay red; the scene
+stays dark. There's a live WPM and accuracy readout, one quiet mono line that
+brightens while a run is going. Paragraph and stream carry the classic modes —
+timed 15/30/60s, a fixed 10/25/50 words, endless zen — plus two I added this
+round: **rush**, which starts you at 15 seconds and tops the clock up 1.2s per
+word to a 30s cap, so the clock is the whole game; and **sudden death**, where a
+single wrong key ends it with a small red flinch. Star wars ignores the mode axis
+entirely — it's always survival. Every config keeps its own best in localStorage,
+scored by the metric that setup actually chases: WPM for the timed and fixed-word
+runs, words survived for survival, rush and sudden death. Beat it and the screen
+says so, with your last few runs underneath. The restart is instant everywhere —
+Tab then Enter, or on a lose screen just Enter, space, or a tap.
 
 # How it's built
 
@@ -113,12 +133,21 @@ to hold 60fps on a laptop, which drove most of the decisions:
   about the X axis, and I let the perspective camera do the shrinking toward the
   horizon for free — per frame the only work is translating a handful of line
   groups up-plane and fading their opacity with distance, transforms and colors,
-  nothing rebuilt. Words are missed the moment their line crosses the miss line;
-  a whole line's leftovers dissolve together, reusing the disintegrate effect at
-  low intensity. The auto speed is a small proportional controller: it aims the
-  climb rate at your rolling-WPM pace, kept a touch behind, and eases toward that
-  aim with a time constant so it never jerks. Five lines, the starfield and ten
-  falling clones together measure under 2ms a frame.
+  nothing rebuilt. The run ends the moment the active line reaches the top zone.
+  The auto speed is a small proportional controller: it aims the climb rate at
+  your rolling-WPM pace, kept a touch behind, and eases toward that aim with a
+  time constant so it never jerks. A handful of lines plus ten falling clones
+  measure under 2ms a frame.
+
+- **The backdrop is DOM, not WebGL.** The starfield and the paragraph/stream
+  ambience are plain DOM/SVG layers behind a now-transparent canvas, animated in
+  CSS. That means they keep twinkling and drifting even while the render loop is
+  paused in a hidden tab, and the hyperspace loss is mostly CSS too: each star
+  becomes an SVG line that draws outward from the center with `stroke-dashoffset`
+  while the two parallax groups scale past the viewer, and the scene itself blurs
+  and fades away with a canvas filter — the in-scene part (the tilted plane
+  swelling toward the camera) is the only frame-clock piece. It costs the render
+  loop nothing.
 
 - **A results panel that comes through the canvas, where the browser allows it.**
   Chrome's experimental html-in-canvas API can rasterize a live DOM element with
@@ -130,9 +159,9 @@ to hold 60fps on a laptop, which drove most of the decisions:
   get in every browser today. A small footer line says which path ran.
 
 Pixel ratio is capped at 2 and the loop pauses when the tab is hidden. There's a
-`window.typefall` handle that can drive a test deterministically — including the
-crawl's line progress, miss line, current speed and missed count — which is how I
-verify it.
+`window.typefall` handle that can drive a run deterministically — including the
+crawl's line progress, current speed, the run kind and scoring metric, and the
+rush clock — which is how I verify it.
 
 # Try it
 
