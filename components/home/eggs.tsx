@@ -108,6 +108,10 @@ export const Eggs = () => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Open on ⌘K / Ctrl+K, and also on ⌘⇧K / Ctrl+⇧K. Some browser extensions
+      // (the owner runs TabKnight) claim the bare ⌘K chord, so the shift variant
+      // gives a reliable fallback. With Shift held, `e.key` arrives uppercase
+      // ("K"), so normalize to lower before comparing.
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         if (open) {
