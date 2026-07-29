@@ -15,7 +15,8 @@ interface RowProps {
 }
 
 const Pill = ({ children }: { children: React.ReactNode }) => (
-  <span className="shrink-0 rounded-full bg-gray-a3 px-2 py-0.5 text-gray-10 text-small leading-5">{children}</span>
+  // gray-11 (not gray-10) on gray-a3 clears WCAG AA — 7.7:1 dark, 5.1:1 light.
+  <span className="shrink-0 rounded-full bg-gray-a3 px-2 py-0.5 text-gray-11 text-small leading-5">{children}</span>
 );
 
 const Tile = ({ icon, initials, title }: Pick<RowProps, "icon" | "initials" | "title">) => {
@@ -33,7 +34,7 @@ const Tile = ({ icon, initials, title }: Pick<RowProps, "icon" | "initials" | "t
   }
 
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-gray-a3 font-medium text-gray-10 text-small transition-transform duration-200 ease-out group-hover:scale-[1.06]">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-gray-a3 font-medium text-gray-11 text-small transition-transform duration-200 ease-out group-hover:scale-[1.06]">
       {initials}
     </div>
   );

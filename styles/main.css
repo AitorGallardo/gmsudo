@@ -2,10 +2,6 @@
 @import url("@radix-ui/colors/gray-alpha.css");
 @import url("@radix-ui/colors/gray-dark.css");
 @import url("@radix-ui/colors/gray-dark-alpha.css");
-@import url("@radix-ui/colors/pink.css");
-@import url("@radix-ui/colors/pink-alpha.css");
-@import url("@radix-ui/colors/pink-dark.css");
-@import url("@radix-ui/colors/pink-dark-alpha.css");
 @import url("@radix-ui/colors/yellow.css");
 @import url("@radix-ui/colors/yellow-alpha.css");
 @import url("@radix-ui/colors/yellow-dark.css");
@@ -84,18 +80,28 @@
   :root {
     --bg: var(--gray-1);
     --fg: var(--gray-12);
-    --muted: var(--gray-10);
+
+    /* Custom muted between Radix gray-10 and gray-11: keeps the quiet secondary
+     * tone while clearing WCAG AA. Light muted here is 4.9:1 on --gray-1. */
+    --muted: #6f6f6f;
     --accent: #16a34a;
+
+    /* Warm identity gold — the avatar's rim hue, reused only as interaction
+     * accent on the header utilities and as the selection/highlight wash. */
+    --gold: #d9a743;
     --border: var(--gray-4);
     --scrollbar-thumb: var(--gray-4);
     --scrollbar-track: transparent;
-    --selection-background: var(--pink-3);
-    --selection-foreground: var(--pink-11);
+
+    /* Selection & highlight: a translucent warm-gold wash over the page, with
+     * theme-adaptive text (--fg) so it stays legible in both schemes. */
+    --selection-background: color-mix(in srgb, var(--gold) 24%, transparent);
+    --selection-foreground: var(--fg);
     --kbd-background: var(--gray-3);
     --kbd-foreground: var(--gray-11);
     --kbd-border: var(--gray-4);
-    --highlight-background: var(--yellow-3);
-    --highlight-foreground: var(--yellow-11);
+    --highlight-background: color-mix(in srgb, var(--gold) 20%, transparent);
+    --highlight-foreground: var(--fg);
     --radius-small: 4px;
     --radius-base: 8px;
     --radius-large: 12px;
@@ -103,6 +109,14 @@
 
   .dark {
     --accent: #22c55e;
+
+    /* Dark muted is 5.9:1 on --gray-1 (#111). */
+    --muted: #909090;
+
+    /* Gold reads darker against the dark canvas, so lift the selection wash a
+     * touch to keep the same presence it has in light mode. */
+    --selection-background: color-mix(in srgb, var(--gold) 30%, transparent);
+    --highlight-background: color-mix(in srgb, var(--gold) 28%, transparent);
   }
 
   * {
