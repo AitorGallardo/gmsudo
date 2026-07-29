@@ -115,10 +115,10 @@ const earlier = [
 export default function Home() {
   return (
     <div className="stagger">
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <Monogram />
         {/* Header cluster — beams only, stays fixed and functional during play. */}
-        <div className="relative flex items-center gap-3 text-muted text-small" data-play-beam>
+        <div className="relative flex items-center gap-2 text-muted text-small" data-play-beam>
           <PaletteTrigger />
           <AppThemeSwitcher />
         </div>
