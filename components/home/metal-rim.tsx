@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { MetalFx, PRESETS } from "metal-fx";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Richen metal-fx's bundled `gold` preset into an unmistakable warm gold.
@@ -86,11 +86,42 @@ export const MetalRim = ({
   className,
 }: MetalRimProps) => {
   const [mounted, setMounted] = useState(false);
+  // metal-fx sizes its WebGL ring from the host's measured box and, at ≤2px,
+  // hands the shader a negative <rect> (width/height -1) — a console error on
+  // every load. We hold the plain child in a measuring host and only swap in
+  // MetalFx once the box is comfortably larger than that degenerate range, so
+  // the shader never mounts against a 0–2px layout (initial paint, a suspended
+  // tab, or a not-yet-laid-out ancestor).
+  const [sized, setSized] = useState(false);
+  const hostRef = useRef<HTMLSpanElement>(null);
   const { resolvedTheme } = useTheme();
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return <>{children}</>;
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el || sized) return;
+    const check = (w: number, h: number) => {
+      if (w > 4 && h > 4) setSized(true);
+    };
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        check(width, height);
+      }
+    });
+    ro.observe(el);
+    const rect = el.getBoundingClientRect();
+    check(rect.width, rect.height);
+    return () => ro.disconnect();
+  }, [sized]);
+
+  if (!mounted || !sized)
+    return (
+      <span ref={hostRef} className={className} style={{ display: "inline-flex" }}>
+        {children}
+      </span>
+    );
 
   return (
     <MetalFx

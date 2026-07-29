@@ -28,7 +28,17 @@ export const Monogram = () => (
       className="group relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full p-[3px] max-sm:h-[44px] max-sm:w-[44px]"
     >
       <span className="relative block h-full w-full overflow-hidden rounded-full">
-        <img src={`${basePath}/images/gmsudo-avatar.jpg`} alt="gmsudo" width={38} height={38} className="h-full w-full rounded-full object-cover" />
+        {/* Above-the-fold LCP candidate: an 80px webp (~2KB) sized for the ~35px
+         * render slot, with explicit dims (no CLS) and high fetch priority so it
+         * lands with the first paint. The full-res jpg is kept for any large use. */}
+        <img
+          src={`${basePath}/images/gmsudo-avatar-80.webp`}
+          alt="gmsudo"
+          width={38}
+          height={38}
+          fetchPriority="high"
+          className="h-full w-full rounded-full object-cover"
+        />
         <span className="absolute inset-0 hidden items-center justify-center rounded-full bg-black/55 font-mono text-small text-white group-hover:flex">
           $<span className="cursor-blink">_</span>
         </span>
