@@ -40,7 +40,7 @@
   @keyframes pulse-dot {
     0%,
     100% {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--live) 45%, transparent);
     }
 
     50% {
@@ -84,7 +84,8 @@
     /* Custom muted between Radix gray-10 and gray-11: keeps the quiet secondary
      * tone while clearing WCAG AA. Light muted here is 4.9:1 on --gray-1. */
     --muted: #6f6f6f;
-    --accent: #16a34a;
+    --accent: #9c7420;
+    --live: #16a34a;
 
     /* Warm identity gold — the avatar's rim hue, reused only as interaction
      * accent on the header utilities and as the selection/highlight wash. */
@@ -108,7 +109,8 @@
   }
 
   .dark {
-    --accent: #22c55e;
+    --accent: #d9a743;
+    --live: #22c55e;
 
     /* Dark muted is 5.9:1 on --gray-1 (#111). */
     --muted: #909090;
@@ -431,7 +433,7 @@
   .live-dot {
     width: 7px;
     height: 7px;
-    background: var(--accent);
+    background: var(--live);
     border-radius: 9999px;
     animation: pulse-dot 2.4s ease-in-out infinite;
   }
