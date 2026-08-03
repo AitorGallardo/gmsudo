@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://gmsudo.com
+
+# Sitemaps
+Sitemap: https://gmsudo.com/sitemap.xml

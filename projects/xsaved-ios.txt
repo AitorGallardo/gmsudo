@@ -1,0 +1,539 @@
+3:I[8704,["55","static/chunks/55-b16dca29e1d469d5.js","137","static/chunks/137-9598eab4ff025283.js","269","static/chunks/269-9851c40ed11afa3a.js","145","static/chunks/145-6a6f56bdf77cacd0.js","205","static/chunks/app/(posts)/projects/%5Bslug%5D/page-a7b5b7a28f572e9a.js"],"PostNavigation"]
+c:I[4591,["55","static/chunks/55-b16dca29e1d469d5.js","137","static/chunks/137-9598eab4ff025283.js","269","static/chunks/269-9851c40ed11afa3a.js","145","static/chunks/145-6a6f56bdf77cacd0.js","205","static/chunks/app/(posts)/projects/%5Bslug%5D/page-a7b5b7a28f572e9a.js"],"TableOfContents"]
+d:I[4707,[],""]
+f:I[6423,[],""]
+10:I[335,["310","static/chunks/0e5ce63c-02ccdcb7b9be7714.js","55","static/chunks/55-b16dca29e1d469d5.js","137","static/chunks/137-9598eab4ff025283.js","993","static/chunks/app/(posts)/layout-59c3f0bcc24f256f.js"],"Breadcrumb"]
+11:I[4055,["55","static/chunks/55-b16dca29e1d469d5.js","269","static/chunks/269-9851c40ed11afa3a.js","883","static/chunks/app/(posts)/projects/page-273a06156a257f9a.js"],"ViewTransitions"]
+12:I[5881,["55","static/chunks/55-b16dca29e1d469d5.js","137","static/chunks/137-9598eab4ff025283.js","846","static/chunks/846-ffbb4eaf1ddf2e96.js","931","static/chunks/app/page-00c55020477d2535.js"],"AppThemeProvider"]
+17:I[3513,["55","static/chunks/55-b16dca29e1d469d5.js","137","static/chunks/137-9598eab4ff025283.js","185","static/chunks/app/layout-0f46a8ff906fc50d.js"],"Eggs"]
+4:T53c,
+<div className="flex items-center gap-4 mt-8 mb-8">
+  <img 
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/bbbookmarks-icon-128x128.png`}
+    alt="BBBookmarks logo"
+    width={64}
+    height={64}
+    className="rounded-xl"
+  />
+</div>
+
+BBBookmarks was my first real attempt at fixing X bookmarks, back in 2024. The idea was simple: pull your saved tweets out of that endless scroll and into a place where you could actually search and organize them.
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/webpage_screenshot_1280x800.webp`}
+  alt="The BBBookmarks web interface"
+  className="rounded-lg shadow-lg w-full"
+/>
+
+# What it did
+
+It synced your X bookmarks to a hosted web app, let you tag and sort them, and gave you full-text search — the things X still doesn't do. For a first version, it worked.
+
+# What I got wrong
+
+I leaned on a server and an account for everything. That meant a login to create, a backend to keep running, and a copy of your bookmarks living somewhere you didn't own. It was slower than it needed to be, more fragile than I wanted, and it asked for trust it didn't have to ask for.
+
+Those lessons became XSaved: local-first, no account required, and fast because the work happens on your own machine. BBBookmarks was the rough draft. I'm glad I built it, and just as glad I moved on from it.
+5:T128a,
+<Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/cardstock-preview.png`} alt="Dark scene with several HTML bookmark-style cards floating and overlapping, one lifted with a soft shadow" />
+
+I wanted to answer a small, nagging question: what if a webpage's cards weren't
+laid out — what if they were *objects*? Things with weight you could grab, throw,
+and stack, that bounced off each other and settled. And crucially, what if the
+HTML inside them stayed completely alive the whole time — links clickable, a text
+input still typing, a button still doing its thing — while they tumbled?
+
+That's cardstock. Seven real HTML cards in a dark room, run by a 2D physics
+engine. Grab one and a spring pulls it to your cursor; let go while you're moving
+and it flies off with real inertia and bounces. Double-tap to flip it. Press `G`
+to swap the gentle zero-g drift for gravity and watch the whole stack drop.
+
+# What it is
+
+Each card is a normal DOM element — a small bookmark-style card pointing at
+something I've built. The physics engine (matter-js) owns a rectangle body for
+each one and does all the real work: collisions, restitution, the spring joint
+when you grab, the throw velocity when you release. Every frame I read each
+body's position and angle and write a transform onto the matching DOM node, plus
+a little velocity-based tilt and a lift-scale so a card you're holding feels like
+it's off the table.
+
+Because the cards never stop being real DOM, the last one can carry a live text
+input that renames it as you type and a button that spawns brand-new cards
+straight into the simulation. New DOM, born at runtime, immediately throwable.
+That's the whole point — proof this is a live document, not a picture of one.
+
+# How it's built
+
+There are two rendering paths, and the HUD in the corner always tells you which
+one is actually running. I think that honesty is the interesting part, so here's
+the real story.
+
+The default path — the one that ships today, everywhere, and the one I actually
+tuned for feel — is plain CSS. The physics loop writes `translate3d(...)
+rotateZ(...)` onto each card every frame. Input, layout, hit-testing: all just
+the browser doing what it already does. On a normal browser the HUD reads
+`engine: css transforms`, and that's not a fallback I'm apologizing for — it's a
+60fps interactive toy on desktop and touch with nothing exotic required.
+
+The enhancement is Chrome's new HTML-in-canvas API. For about twenty years you
+could not draw live DOM into a `<canvas>`; this API finally lets you. You mark a
+canvas with the `layoutsubtree` attribute so its child elements get laid out and
+hit-tested, then call `ctx.drawElement()` to rasterize an element and its subtree
+into the canvas. When cardstock detects it, I re-parent the live cards into that
+canvas and paint them there each frame — but because those cards are still
+laid-out, hit-tested canvas children, the exact same pointer code keeps working.
+Pixels flow through the canvas; input still flows through the DOM.
+
+I want to be precise about what that new API does and doesn't buy you right now,
+because it's easy to oversell. It genuinely does the thing that was impossible
+before: real, live, styled DOM rasterized into a canvas, so you can composite it
+with WebGL, shaders, or 2D drawing. What it does *not* do today is deliver clicks
+and taps to those rasterized pixels — the spec sends interactivity back through
+hit-testing on the canvas' laid-out children, and you're expected to map
+coordinates yourself. It's Chrome-only (Chrome 138 developer trial behind
+`chrome://flags/#canvas-draw-element`, origin trial from Chrome 148; no Firefox
+or Safari commitment), and even the method name is still settling — some builds
+expose `drawElement`, others `drawElementImage`. So I feature-detect defensively,
+wrap every canvas call, keep an always-interactive DOM layer as the source of
+truth, and fall straight back to CSS transforms the instant anything looks off.
+Nothing you touch ever depends on a flag being enabled. That's the design rule:
+feel great everywhere first, show off the new platform capability second.
+
+# Try it
+
+Open it, grab a card, throw it into the others. Type in the live card, spawn a
+few, hit `G` and drop the stack. It works on a phone too.
+
+The idea eventually graduated into this very portfolio. Type `play` in the
+site's terminal and watch the home page come apart — every row detaches, tips,
+and falls into a pile you can throw around, then `esc` puts it all back. Same
+physics, same live DOM, just wearing the site's own clothes.
+
+- Live demo: [cardstock.gmsudo.com](https://cardstock.gmsudo.com/)
+- Source: [github.com/AitorGallardo/cardstock](https://github.com/AitorGallardo/cardstock)
+6:Tf1d,
+<Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/primordia-preview.png`} alt="Primordia — glowing organisms drifting in a dark circular petri dish" />
+
+I wanted to see what it feels like to peer into a pond that thinks. So I built
+one. Primordia is a tiny living world that runs entirely in your browser: a
+circular petri dish, seen from above, with a dozen or so glowing organisms that
+drift, feed, form bonds, feud, reproduce and die. Every one of them is
+procedurally unique — body, colour, size, motion and name all grown from a
+single seed — and their minds are a real open-source language model running on
+your own machine. No server, no API key.
+
+# What you're watching
+
+Food motes drift in from the rim. Organisms get hungry, chase them, and dim as
+their energy drains — when it hits zero they sink and fade to sediment. Well-fed
+pairs that get along will reproduce, and the offspring blends its parents' traits
+with a little mutation, so the pond slowly drifts genetically over time. Faint
+threads appear between organisms that have bonded; some pairs bond, some learn to
+avoid each other. Now and then one says something in a small speech bubble.
+
+Click any organism and you get its card: name, age, energy, personality, its
+strongest bonds and rivalries, and its last thought — including whether that
+thought came from the model or from instinct.
+
+# How it's built
+
+The honest split matters to me, so here it is plainly.
+
+**The body is steering behaviors.** Movement, hunger, the relationship affinity
+matrix, reproduction and death are all classic, deterministic-ish simulation —
+wander, seek, flee, separate, plus a lifecycle. It's cheap and it holds 60fps.
+The whole pond is alive with the AI switched off; add `?minds=off` to the URL and
+you still get births, deaths, bonds and rivalries. That was a hard rule: the
+experience must never depend on the model.
+
+**The voice and intent is a language model.** After the sim is already running,
+`SmolLM2-135M-Instruct` — an open model of about 135 million parameters — loads
+lazily through transformers.js on WebGPU, with a WASM fallback, inside a Web
+Worker so it never stalls the render loop. Round-robin, one organism thinks every
+few seconds. I hand the model a compact prompt built from that organism's state
+and persona and ask for a tiny JSON action plus a line of at most eight words.
+The action biases its steering for the next ~10 seconds; the line becomes a
+speech bubble.
+
+Why such a small model? Because it has to fit and run in a stranger's browser
+tab with no backend, and because 135M is honestly enough for this job — I don't
+need reasoning, I need a flicker of intent and a distinct little voice. One model
+wears seven personas (curious, grumpy, poetic, anxious, greedy, gentle, stoic),
+which is how a single 135M model yields many voices. I'm not pretending these are
+minds; the model is small and it says silly things, and that's the fun of it.
+
+**The contract, and its failure mode.** The model is asked to answer with one
+line like `{"action":"seek_food","say":"so hungry"}`. I parse it defensively:
+pull out the JSON, validate the action against a fixed set, confirm any named
+target is a real nearby organism, clamp the text. On any parse failure, timeout,
+or if the model never loads at all, that organism silently falls back to instinct
+and a clearly-labelled canned line. The UI never dresses instinct up as AI — the
+HUD states exactly what's running (`SmolLM2-135M running in your browser`, or
+`instinct mode`), instinct speech is visually marked, and each inspect card tells
+you the source of the last thought.
+
+# Try it
+
+- Live demo: https://primordia.gmsudo.com/
+- Source: https://github.com/AitorGallardo/primordia
+
+Drag to pan, scroll to zoom, click an organism to inspect it, and watch the
+`minds:` line to know exactly what's doing the thinking.
+7:T6fc,
+<div className="mt-8 mb-2 flex items-center gap-4">
+  <img
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/tabknight-icon.png`}
+    alt="TabKnight icon"
+    width={72}
+    height={72}
+    className="rounded-2xl"
+  />
+  <p className="m-0 font-medium">A command palette for your tabs.</p>
+</div>
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/tabknight-overlay.jpg`}
+  alt="TabKnight's ⌘K overlay — a fuzzy-searchable tab list beside a live preview pane, floating over the current page"
+/>
+
+Thirty tabs across four windows, and the one you need is somewhere in the blur. TabKnight turns Chrome's tab strip into a fast, keyboard-driven command surface: hit <kbd>⌘K</kbd> and a palette appears over your current page — fuzzy-search every tab in every window, see a real preview of where you're going, and jump there with <kbd>Enter</kbd>.
+
+# Never leave the keyboard
+
+Everything is reachable without the mouse. Arrow through matches, close or pin or mute the highlighted tab with a single chord, type `>` to filter every browser command, or drop into Audio mode to control whichever tab is making noise. The search stays focused even when focus drifts — you just type.
+
+# Sessions that survive
+
+Done with a project? Save the working set of tabs as a bookmark-backed session and restore it later — tomorrow, or on another machine. Your desk gets cleared without losing your place.
+
+# Local-first, by design
+
+Everything lives in your browser. TabKnight makes no network requests of its own, and it degrades gracefully even on Chrome's internal pages. No accounts, no tracking, no server.
+
+# Get it
+
+TabKnight is open source — TypeScript, React 18, and Bun under a Manifest V3 extension. Browse the code on [GitHub](https://github.com/AitorGallardo/tabknight).
+8:T26c6,
+<Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/typefall-preview.png`} alt="3D letters of a word floating in a dark scene, a warm-gold caret on the active word" />
+
+A typing test that happens inside a 3D scene.
+
+# What it is
+
+I use monkeytype every day, so Typefall is the same thing — a real typing test —
+rendered in three.js instead of on a flat page. The default view is **star wars**,
+and this round turned it into the game. It's a survival run. The reading surface
+tilts back like a Star Wars opening title and, instead of random words, it types
+short Star-Wars-flavored lines — a handful of iconic catchphrases and a set of
+crawl lines I wrote myself, about rebellions and star systems and fallen empires,
+shuffled fresh each run. It sits frozen with a quiet "type to begin" until your
+first keystroke, then the lines start climbing toward a horizon, shrinking and
+fading with distance. You type each line as it travels up. The active word carries
+a thin caret with a slow molten-gold sheen that rides it up-plane every frame,
+lerping and blinking like monkeytype's. There's no miss-and-continue anymore: the
+moment one word reaches the top zone, the run is over. The stars behind stretch
+into a hyperspace jump — the whole field of dots draws out into radial light
+streaks and rushes past, the crawl streaks away with them, one faint gold flash —
+and it settles to a restrained lose card: how many words you survived, your WPM,
+your best at that speed. Then you're one key from going again, and the crawl is
+frozen and waiting. The retry has no friction on purpose; it should feel like
+pulling a slot machine.
+
+A **speed** setting sets the climb rate — 1x, 1.4x, 1.9x, 2.5x, or **auto**, which
+rubber-bands the climb to your rolling WPM so the line always sits just behind you,
+chasing your true speed. Each speed keeps its own best, scored by words survived
+rather than WPM — the game changed, so those bests start fresh. The backdrop is a
+DOM/SVG starfield now, sitting behind a transparent WebGL canvas: a hundred-odd
+tiny dotted stars in two parallax layers, cold-white with a few faint gold, on a
+slow staggered twinkle — no lens flares, nothing loud. It's what stretches into
+the hyperspace streaks when you lose.
+
+Underneath the crawl is a measured-flow layout engine, and it also drives a
+**paragraph** view you can switch to — monkeytype's calm readable wall of rows.
+The reading surface there is flat, crisp SDF text — a real monospace typeface
+(Space Mono) rendered with troika-three-text — so it reads like a proper
+typing tool rather than a row of chunky objects. Each word is measured by the
+font's real glyph advances and placed one normal space after the last, wrapping
+into a centered, constrained column exactly like prose; monospace means every row
+lines up. Three lines stay visible; finish the active line and the block scrolls
+up one row — the finished line fading out above, a fresh one fading in below. The
+column is derived from the camera frustum, so it keeps its size and stays centered
+at 1024, 1440 and 1920 and recomputes on resize without losing your place. There's
+also a **stream** view, where the words fly in from the background as chunky
+extruded 3D letters: the current word big and close, the next few receding into
+the dark; it always auto-advances, so it never needs a space, which suits a
+phone. Paragraph and stream carry their own faint backdrops too — a dust-and-
+vignette layer for paragraph, a depth haze for stream — pitched well below the
+text so they never compete. Click away in any view and the passage dims with a
+small "click to focus" line, like the real thing.
+
+The typing is the same everywhere, and this round changed how it feels. Every
+correct keystroke now sends that letter *out of the scene*: a chunky extruded 3D
+copy peels off and fires the completion effect you picked — it drops and piles on
+the floor, bursts into particles, dissolves into ash, spirals off, rockets up, or
+shatters into shards — while the flat surface glyph fades out of its slot. The slot
+stays reserved so the passage never jumps and the caret keeps its place, but the
+line empties behind you as you type, which is oddly satisfying. Miss a letter and
+it stays red until you fix it. A word advances on space by default — even a perfect
+one — with any letters you skipped past marked as errors, exactly like monkeytype;
+there's an **advance** setting if you'd rather it jump the instant a word is all
+correct. Backspace walks back through the current word restoring each letter (they
+fade back in as untyped gray), and steps into the previous word too when you left
+it imperfect. Accuracy counts every keystroke — a corrected mistake, and every
+letter a star-wars word left untyped, still costs you.
+
+The accent is a warm gold that matches the rest of my site — the caret, the live
+WPM, the selected settings, the results, and the new-best moment, where the score
+gets a single liquid-gold shimmer before it settles. Errors stay red; the scene
+stays dark. There's a live WPM and accuracy readout, one quiet mono line that
+brightens while a run is going. Paragraph and stream carry the classic modes —
+timed 15/30/60s, a fixed 10/25/50 words, endless zen — plus two I added this
+round: **rush**, which starts you at 15 seconds and tops the clock up 1.2s per
+word to a 30s cap, so the clock is the whole game; and **sudden death**, where a
+single wrong key ends it with a small red flinch. Star wars ignores the mode axis
+entirely — it's always survival. Every config keeps its own best in localStorage,
+scored by the metric that setup actually chases: WPM for the timed and fixed-word
+runs, words survived for survival, rush and sudden death. Beat it and the screen
+says so, with your last few runs underneath. The restart is instant everywhere —
+Tab then Enter, or on a lose screen just Enter, space, or a tap.
+
+# How it's built
+
+three.js for rendering, troika-three-text for the flat reading surface,
+cannon-es for physics, plain TypeScript, no framework. The whole thing is built
+to hold 60fps on a laptop, which drove most of the decisions:
+
+- **The right tool for each surface.** The paragraph you read is SDF text
+  (troika-three-text), one glyph node per character: crisp at any size, real
+  font metrics, and cheap — three full lines plus a dozen live clones measure
+  around 2ms a frame. Color changes are just a material uniform, so a keystroke
+  only recolors a glyph and nudges the caret — never a geometry rebuild. The
+  chunky 3D letters — the stream view and every clone that detaches and falls —
+  use extruded `TextGeometry`, generated once per character and cached, so those
+  bevelled glyphs are shared by every instance and typing the same letter again
+  costs nothing.
+
+- **Effects are pools, not allocations.** All the particle effects (explode,
+  disintegrate, launch trails, vortex) draw from a single `THREE.Points` cloud
+  that's stepped on the CPU and drawn in one call. Shatter shards are a small
+  recycled set of boxes integrated by hand. Nothing gets allocated on a
+  keystroke during a fast run.
+
+- **Physics only where it earns its keep.** cannon-es runs solely for the *fall*
+  effect and the letters that rain behind the results screen, where real
+  stacking is the whole point. Live bodies are capped and the oldest fade out,
+  so a long test never drifts below frame rate. Shatter fakes its physics
+  because it doesn't need contacts — it just needs to look right for a second.
+
+- **The crawl is just a tilted plane.** The lines live on a plane tilted back
+  about the X axis, and I let the perspective camera do the shrinking toward the
+  horizon for free — per frame the only work is translating a handful of line
+  groups up-plane and fading their opacity with distance, transforms and colors,
+  nothing rebuilt. The run ends the moment the active line reaches the top zone.
+  The auto speed is a small proportional controller: it aims the climb rate at
+  your rolling-WPM pace, kept a touch behind, and eases toward that aim with a
+  time constant so it never jerks. A handful of lines plus ten falling clones
+  measure under 2ms a frame.
+
+- **The backdrop is DOM, not WebGL.** The starfield and the paragraph/stream
+  ambience are plain DOM/SVG layers behind a now-transparent canvas, animated in
+  CSS. That means they keep twinkling and drifting even while the render loop is
+  paused in a hidden tab, and the hyperspace loss is mostly CSS too: each star
+  becomes an SVG line that draws outward from the center with `stroke-dashoffset`
+  while the two parallax groups scale past the viewer, and the scene itself blurs
+  and fades away with a canvas filter — the in-scene part (the tilted plane
+  swelling toward the camera) is the only frame-clock piece. It costs the render
+  loop nothing.
+
+- **A results panel that comes through the canvas, where the browser allows it.**
+  Chrome's experimental html-in-canvas API can rasterize a live DOM element with
+  `drawElement`; where it exists, the results overlay is painted into a
+  `CanvasTexture` on a floating 3D panel in the scene, while the real (invisible)
+  DOM overlay keeps the clicks and focus — pixels through the canvas, input
+  through the DOM. It's a progressive enhancement: the detection is guarded and
+  any failure falls back silently to the ordinary DOM overlay, which is what you
+  get in every browser today. A small footer line says which path ran.
+
+Pixel ratio is capped at 2 and the loop pauses when the tab is hidden. There's a
+`window.typefall` handle that can drive a run deterministically — including the
+crawl's line progress, current speed, the run kind and scoring metric, and the
+rush clock — which is how I verify it.
+
+# Try it
+
+- Live demo: [typefall.gmsudo.com](https://typefall.gmsudo.com/)
+- Source: [github.com/AitorGallardo/typefall](https://github.com/AitorGallardo/typefall)
+9:T803,
+<div className="mt-8 mb-2 flex items-center gap-4">
+  <img
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-icon.png`}
+    alt="XSaved for iOS icon"
+    width={72}
+    height={72}
+    className="rounded-2xl"
+  />
+  <p className="m-0 font-medium">Your X bookmarks, native on iPhone.</p>
+</div>
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios.webp`}
+  alt="XSaved for iOS — the home feed of saved bookmarks"
+/>
+
+The same bookmarks you save on X, now in a native app you can flick through anywhere.
+
+# A feed worth scrolling
+
+Your saves are laid out in a clean, image-first grid that feels right at home on iPhone. Photos, quotes, threads — all in one calm, browsable place.
+
+# Search that keeps up
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-search.webp`}
+  alt="XSaved for iOS — searching saved bookmarks"
+/>
+
+Looking for something specific? Start typing and your whole library narrows down on the spot.
+
+# Every post, the full picture
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-detail.webp`}
+  alt="XSaved for iOS — a single bookmark in full"
+/>
+
+Tap any bookmark to open it in full — the words, the media, who posted it — without bouncing back out to X.
+
+# Saved anywhere, here on its own
+
+Save a bookmark from the extension on your laptop and it shows up on your phone by itself — live sync keeps every device on the same page. Save from anywhere in the system with the share sheet, and keep your library one tap away with a home-screen widget.
+
+# How it's built
+
+It's a native SwiftUI app targeting iOS 26, currently in TestFlight beta. It talks to the same sync layer as the extension and the Mac app, so a bookmark saved on another device appears here on its own — no manual refresh. Saving works straight from the system share sheet, and a home-screen widget keeps the library one tap away.
+
+# On TestFlight now
+
+The XSaved Chrome extension is live today at [xsaved.com](https://xsaved.com), and the iPhone app is in TestFlight beta.
+a:T892,
+<div className="mt-8 mb-2 flex items-center gap-4">
+  <img
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac-icon.png`}
+    alt="XSaved for Mac icon"
+    width={72}
+    height={72}
+    className="rounded-2xl"
+  />
+  <p className="m-0 font-medium">Your whole bookmark library, native on the Mac.</p>
+</div>
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac.webp`}
+  alt="XSaved for Mac — the dashboard overview"
+/>
+
+XSaved on the Mac gives all those saved posts a real home — a fast, native app with room to spread out, browse, and finally rediscover what you've been collecting for years.
+
+# See the whole picture
+
+A clean dashboard shows what you've saved at a glance — how much, from whom, and plenty you'd forgotten was in there.
+
+# Browse it like it's yours
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac-library.webp`}
+  alt="XSaved for Mac — the full bookmark library"
+/>
+
+Every bookmark in a spacious grid you can sort and filter by photos, videos, links, or author. It's your timeline, minus the noise.
+
+# Command it from the keyboard
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac-palette.webp`}
+  alt="XSaved for Mac — the quick command palette"
+/>
+
+Hit a shortcut and jump straight to anything — a search, a filter, a fresh sync — without ever leaving the keyboard.
+
+# Your folders, everywhere
+
+The folders you've made on X come along for the ride — synced into a sidebar, in the order you left them, and kept in step across the extension, your phone, and the Mac. Organize once, and it holds everywhere.
+
+# How it's built
+
+Native SwiftUI, in TestFlight beta, and it acts as the hub of the shared sync backend the other apps talk to. Folders sync from X in your own order — a folder's position is seeded from X on first import and never re-sorted on later syncs, so nothing you arranged gets shuffled. Bulk folder edits batch into single round-trips with last-write-wins semantics, so reorganizing a lot at once stays fast and predictable.
+
+# On TestFlight now
+
+The XSaved Chrome extension is live today at [xsaved.com](https://xsaved.com), and the Mac app is in TestFlight beta.
+b:Tf55,
+<div className="mt-8 mb-2 flex items-center gap-4">
+  <img
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-icon.png`}
+    alt="XSaved icon"
+    width={72}
+    height={72}
+    className="rounded-2xl"
+  />
+  <p className="m-0 font-medium">The bookmark manager X never built.</p>
+</div>
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-hero.webp`}
+  alt="XSaved — your X bookmarks, turned into a searchable, organized library"
+/>
+
+If you've ever saved a tweet and never found it again, you already know the problem. X bookmarks are one endless list — no search, no way back to that one post you actually needed.
+
+XSaved fixes that. Your saves turn into a proper library you can search, sort, group, and come back to — with your own notes on anything worth a second look. It grew into a family: the extension in your browser, a native iPhone app, and a native Mac app, all backed by one shared sync layer. Save something at your desk and it shows up on your phone on its own.
+
+# On X — the Chrome extension
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-chrome.webp`}
+  alt="The XSaved library inside the browser, grouped by topic with instant search"
+/>
+
+Install it, open X, and your bookmarks become a clean, visual grid that groups by topic on its own. Type a word, a name, or a topic and the whole library narrows on the spot — filter by author, tag, or media type to close in further, and drop a private note on anything you want to remember. It's live today on the [Chrome Web Store](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn).
+
+# On your iPhone — native iOS app
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios.webp`}
+  alt="XSaved for iOS — an image-first grid of saved bookmarks on iPhone"
+/>
+
+The same bookmarks, native on iPhone in an image-first grid that feels right at home. Search keeps up as you type, the system share sheet saves from anywhere, and a home-screen widget keeps your library one tap away. It's a SwiftUI app in TestFlight beta now.
+
+<p className="mt-3"><a href={`${process.env.NEXT_PUBLIC_BASE_PATH}/projects/xsaved-ios`} className="underline decoration-gray-a4 underline-offset-2">More about XSaved for iOS →</a></p>
+
+# On your Mac — native app + sync hub
+
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac.webp`}
+  alt="XSaved for Mac — the dashboard overview of everything you've saved"
+/>
+
+On the Mac your whole library gets room to spread out: a dashboard that shows what you've saved at a glance, a spacious grid you can sort and filter, and a keyboard palette to jump straight to anything. It's also the hub of the shared sync backend the other apps talk to — native SwiftUI, in TestFlight beta.
+
+<p className="mt-3"><a href={`${process.env.NEXT_PUBLIC_BASE_PATH}/projects/xsaved-mac`} className="underline decoration-gray-a4 underline-offset-2">More about XSaved for Mac →</a></p>
+
+# How it's built
+
+The extension is local-first: everything lives in the browser's IndexedDB, so there's no server in the loop and nothing to wait on. Full-text search stays instant across tens of thousands of bookmarks by leaning on the right indexes plus a layered cache that reuses work from one keystroke to the next. Optional cloud sync landed in v0.96 for people who want their library on more than one machine — the Mac app acts as the hub, and the iPhone and extension stay in step through it. It's private by default: no account to create, nothing handed to a server you don't control, and sync is always a choice, never a requirement.
+
+# Get it
+
+XSaved is live on the [Chrome Web Store](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn), with the iPhone and Mac apps in TestFlight beta. Add it, open your bookmarks on X, and your library fills in as it syncs. See it all at [xsaved.com](https://xsaved.com).
+e:["slug","xsaved-ios","d"]
+13:{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"}
+14:{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"}
+15:{"display":"inline-block"}
+16:{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0}
+0:["zE7pIJtI92VAUvWT_77er",[[["",{"children":["(posts)",{"children":["projects",{"children":[["slug","xsaved-ios","d"],{"children":["__PAGE__?{\"slug\":\"xsaved-ios\"}",{}]}]}]}]},"$undefined","$undefined",true],["",{"children":["(posts)",{"children":["projects",{"children":[["slug","xsaved-ios","d"],{"children":["__PAGE__",{},[["$L1",[["$","div",null,{"className":"flex flex-col","children":[["$","div",null,{"children":["$","h1",null,{"children":["XSaved for iOS"," ",["$","a",null,{"href":"https://xsaved.com","target":"_blank","rel":"noopener noreferrer","className":"ml-2 text-muted transition-opacity hover:opacity-60","children":"https://xsaved.com"}]]}]}],["$","div",null,{"className":"mt-1 flex gap-2 text-muted text-small","children":[["$","div",null,{"children":["Published ","Jun 2026"]}],false,false,false,false]}]]}],"$L2",["$","$L3",null,{"posts":[{"title":"BBBookmarks","summary":"My first shot at fixing X bookmarks. It worked, it broke, and it taught me what to build next.","tags":["Chrome Extension","Twitter","Bookmarks","Productivity"],"time":{"created":"2024-10-18T19:24:46.167Z","updated":"2026-08-02T01:14:29.482Z"},"media":{"image":"/images/Bbbookmarks-preview.png"},"pagesite":{"url":"https://bbbookmarks.com"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"BBBookmarks — Better X Bookmark Management","description":"My first take on fixing X bookmarks: a Chrome extension that synced your saved tweets into a searchable web app.","keywords":["twitter bookmarks","x bookmarks","bookmark manager","social media organizer"]},"slug":"bbbookmarks","content":"$4"},{"title":"Cardstock","summary":"Live, fully-interactive HTML cards thrown around by a real 2D physics engine — with Chrome's new HTML-in-canvas API as progressive enhancement.","tags":["HTML-in-canvas","Physics","Web Platform"],"time":{"created":"2026-07-25T00:00:00.000Z","updated":"2026-08-03T16:25:17.559Z"},"media":{"image":"/images/cardstock-preview.png"},"pagesite":{"url":"https://cardstock.gmsudo.com/"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"Cardstock — live HTML cards, physically simulated","description":"A dark-scene experiment where real, interactive HTML cards are grabbed, thrown, and collided by a 2D physics engine, with Chrome's HTML-in-canvas API layered on as progressive enhancement.","keywords":["HTML in canvas","drawElement","layoutsubtree","matter-js","physics","web platform","interactive DOM","Aitor Gallardo"]},"slug":"cardstock","content":"$5"},{"title":"Primordia","summary":"A browser petri dish whose organisms think with a 135M open-source model — no server, no API keys.","tags":["Three.js","AI","transformers.js","Simulation"],"time":{"created":"2026-07-25T00:00:00.000Z","updated":"2026-08-03T16:25:17.556Z"},"media":{"image":"/images/primordia-preview.png"},"pagesite":{"url":"https://primordia.gmsudo.com/"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"Primordia — a living petri dish with in-browser AI minds","description":"A three.js petri dish where autonomous organisms wander, eat, bond and die on steering behaviors, and think with SmolLM2-135M running entirely in your browser via transformers.js.","keywords":["primordia","three.js","transformers.js","in-browser AI","WebGPU","SmolLM2","artificial life","simulation","Aitor Gallardo"]},"slug":"primordia","content":"$6"},{"title":"TabKnight","summary":"Keyboard-first tab management for Chrome — fuzzy-search every tab, preview where you're going, and jump there without leaving the page.","tags":["Chrome Extension","Productivity","Keyboard-first"],"time":{"created":"2026-07-23T00:00:00.000Z","updated":"2026-08-03T16:25:17.562Z"},"media":{"image":"/images/tabknight-overlay.jpg"},"pagesite":{"url":"https://tabknight.gmsudo.com/"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"TabKnight — Keyboard-first tab management for Chrome","description":"Hit ⌘K, fuzzy-search every tab in every window, preview where you're headed, and jump there with Enter. Local-first, zero network requests.","keywords":["chrome extension","tab manager","keyboard shortcuts","productivity","command palette"]},"slug":"tabknight","content":"$7"},{"title":"Typefall","summary":"A monkeytype-style typing test rendered in 3D. The default view is a survival crawl: a Star Wars opening title that types itself, climbing toward a horizon — the moment one word reaches the top the stars stretch into hyperspace and you retry. How far you got, not how fast.","tags":["Three.js","Physics","Typing"],"time":{"created":"2026-07-25T00:00:00.000Z","updated":"2026-08-03T16:25:17.553Z"},"media":{"image":"/images/typefall-preview.png"},"pagesite":{"url":"https://typefall.gmsudo.com/"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"Typefall — a 3D typing test in the spirit of monkeytype","description":"A monkeytype-inspired typing test rendered inside a three.js scene. The default view is a survival crawl that types Star-Wars-flavored lines and climbs toward a horizon; the moment one word reaches the top the stars stretch into a hyperspace jump and you run it again. Every correct keystroke sheds a flying copy of the letter with the effect you chose.","keywords":["typefall","typing test","monkeytype","three.js","cannon-es","webgl","wpm","survival","star wars crawl","hyperspace","aitor gallardo"]},"slug":"typefall","content":"$8"},{"title":"XSaved for iOS","summary":"A native iPhone app for your X bookmarks — browse and search everything you've saved, wherever you are.","tags":["iOS","iPhone","Mobile App","X / Twitter"],"time":{"created":"2026-06-21T00:00:00.000Z","updated":"2026-08-02T01:14:29.510Z"},"media":{"image":"/images/xsaved-ios-icon.png"},"pagesite":{"url":"https://xsaved.com"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"XSaved for iOS — Your X bookmarks on iPhone","description":"A fast, native iPhone app that turns your X bookmarks into a library you can browse and search anywhere.","keywords":["x bookmarks","twitter bookmarks","ios app","iphone","bookmark manager"]},"slug":"xsaved-ios","content":"$9"},{"title":"XSaved for Mac","summary":"Your whole bookmark library, native on the Mac — room to spread out, browse, and rediscover what you've saved.","tags":["macOS","Desktop App","Productivity","X / Twitter"],"time":{"created":"2026-06-20T00:00:00.000Z","updated":"2026-08-02T01:14:29.511Z"},"media":{"image":"/images/xsaved-mac-icon.png"},"pagesite":{"url":"https://xsaved.com"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"XSaved for Mac — Your X bookmarks, native on macOS","description":"A fast, native Mac app that gives your X bookmarks a real home — browse, sort, and rediscover everything you've saved.","keywords":["x bookmarks","twitter bookmarks","mac app","macos","bookmark manager"]},"slug":"xsaved-mac","content":"$a"},{"title":"XSaved","summary":"Turn your messy pile of X bookmarks into a library you'll actually use — search it, sort it, and find anything in seconds. On your browser, your iPhone, and your Mac.","tags":["Chrome Extension","iOS","macOS","Productivity","X / Twitter"],"time":{"created":"2026-06-22T00:00:00.000Z","updated":"2026-08-02T01:14:29.511Z"},"media":{"image":"/images/xsaved-icon.png"},"pagesite":{"url":"https://xsaved.com"},"hideOptions":{"hideUpdated":true,"hideReadingTime":true},"seo":{"title":"XSaved — Bookmarks for X, done right","description":"XSaved turns your endless list of X bookmarks into a searchable, organized library — in your browser, on iPhone, and on Mac, kept in sync.","keywords":["x bookmarks","twitter bookmarks","bookmark manager","chrome extension","ios app","mac app","productivity"]},"slug":"xsaved","content":"$b"}]}],["$","$Lc",null,{}]],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/c72178fa8092bc7e.css","precedence":"next","crossOrigin":"$undefined"}]]],null],null]},[null,["$","$Ld",null,{"parallelRouterKey":"children","segmentPath":["children","(posts)","children","projects","children","$e","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Lf",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[null,["$","$Ld",null,{"parallelRouterKey":"children","segmentPath":["children","(posts)","children","projects","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Lf",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","notFoundStyles":"$undefined"}]],null]},[[null,[["$","$L10",null,{}],["$","$Ld",null,{"parallelRouterKey":"children","segmentPath":["children","(posts)","children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Lf",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":"404"}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]]],null],null]},[[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/d5183d50e4e210dc.css","precedence":"next","crossOrigin":"$undefined"}]],["$","html",null,{"lang":"en","className":"__className_f367f3","suppressHydrationWarning":true,"children":["$","body",null,{"children":["$","$L11",null,{"children":["$","$L12",null,{"children":[["$","main",null,{"className":"mx-auto max-w-screen-sm overflow-x-hidden px-6 py-16 sm:py-24 md:overflow-x-visible ","children":["$","article",null,{"className":"article","children":["$","$Ld",null,{"parallelRouterKey":"children","segmentPath":["children"],"error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Lf",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":"$13","children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":"$14","children":"404"}],["$","div",null,{"style":"$15","children":["$","h2",null,{"style":"$16","children":"This page could not be found."}]}]]}]}]],"notFoundStyles":[]}]}]}],["$","$L17",null,{}]]}]}]}]}]],null],null],["$L18",null]]]]
+18:[["$","meta","0",{"name":"viewport","content":"width=device-width, initial-scale=1, viewport-fit=cover"}],["$","meta","1",{"name":"theme-color","media":"(prefers-color-scheme: dark)","content":"#111111"}],["$","meta","2",{"name":"theme-color","media":"(prefers-color-scheme: light)","content":"#fcfcfc"}],["$","meta","3",{"charSet":"utf-8"}],["$","title","4",{"children":"XSaved for iOS"}],["$","meta","5",{"name":"description","content":"Aitor Gallardo (@gmsudo) ships products end-to-end. Currently building XSaved — a local-first, AI-organized bookmark manager for X across Chrome, iOS, and Mac."}],["$","meta","6",{"name":"keywords","content":"Aitor Gallardo,gmsudo,Full-Stack Engineer,AI Engineer,XSaved,TabKnight,Portfolio"}],["$","meta","7",{"name":"robots","content":"index, follow"}],["$","meta","8",{"name":"googlebot","content":"index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1"}],["$","meta","9",{"property":"og:title","content":"XSaved for iOS"}],["$","meta","10",{"property":"og:description","content":"Aitor Gallardo (@gmsudo) ships products end-to-end. Currently building XSaved — a local-first, AI-organized bookmark manager for X across Chrome, iOS, and Mac."}],["$","meta","11",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","12",{"name":"twitter:site","content":"@gmsudo"}],["$","meta","13",{"name":"twitter:creator","content":"@gmsudo"}],["$","meta","14",{"name":"twitter:title","content":"Aitor Gallardo — full-stack & AI engineer"}],["$","meta","15",{"name":"twitter:description","content":"Aitor Gallardo (@gmsudo) ships products end-to-end. Currently building XSaved — a local-first, AI-organized bookmark manager for X across Chrome, iOS, and Mac."}],["$","link","16",{"rel":"icon","href":"/icon.png?a74528cdfbe3e7fe","type":"image/png","sizes":"64x64"}],["$","meta","17",{"name":"next-size-adjust"}]]
+1:null
+19:I[4386,["55","static/chunks/55-b16dca29e1d469d5.js","137","static/chunks/137-9598eab4ff025283.js","269","static/chunks/269-9851c40ed11afa3a.js","145","static/chunks/145-6a6f56bdf77cacd0.js","205","static/chunks/app/(posts)/projects/%5Bslug%5D/page-a7b5b7a28f572e9a.js"],"default"]
+2:[["$","div",null,{"className":"mt-8 mb-2 flex items-center gap-4","children":[["$","img",null,{"src":"/images/xsaved-ios-icon.png","alt":"XSaved for iOS icon","width":72,"height":72,"className":"rounded-2xl"}],["$","p",null,{"className":"m-0 font-medium","children":"Your X bookmarks, native on iPhone."}]]}],"\n",["$","$L19",null,{"src":"/images/xsaved-ios.webp","caption":"$undefined","alt":"XSaved for iOS — the home feed of saved bookmarks"}],"\n",["$","p",null,{"children":"The same bookmarks you save on X, now in a native app you can flick through anywhere."}],"\n",["$","h1",null,{"id":"a-feed-worth-scrolling","children":"A feed worth scrolling"}],"\n",["$","p",null,{"children":"Your saves are laid out in a clean, image-first grid that feels right at home on iPhone. Photos, quotes, threads — all in one calm, browsable place."}],"\n",["$","h1",null,{"id":"search-that-keeps-up","children":"Search that keeps up"}],"\n",["$","$L19",null,{"src":"/images/xsaved-ios-search.webp","caption":"$undefined","alt":"XSaved for iOS — searching saved bookmarks"}],"\n",["$","p",null,{"children":"Looking for something specific? Start typing and your whole library narrows down on the spot."}],"\n",["$","h1",null,{"id":"every-post-the-full-picture","children":"Every post, the full picture"}],"\n",["$","$L19",null,{"src":"/images/xsaved-ios-detail.webp","caption":"$undefined","alt":"XSaved for iOS — a single bookmark in full"}],"\n",["$","p",null,{"children":"Tap any bookmark to open it in full — the words, the media, who posted it — without bouncing back out to X."}],"\n",["$","h1",null,{"id":"saved-anywhere-here-on-its-own","children":"Saved anywhere, here on its own"}],"\n",["$","p",null,{"children":"Save a bookmark from the extension on your laptop and it shows up on your phone by itself — live sync keeps every device on the same page. Save from anywhere in the system with the share sheet, and keep your library one tap away with a home-screen widget."}],"\n",["$","h1",null,{"id":"how-its-built","children":"How it's built"}],"\n",["$","p",null,{"children":"It's a native SwiftUI app targeting iOS 26, currently in TestFlight beta. It talks to the same sync layer as the extension and the Mac app, so a bookmark saved on another device appears here on its own — no manual refresh. Saving works straight from the system share sheet, and a home-screen widget keeps the library one tap away."}],"\n",["$","h1",null,{"id":"on-testflight-now","children":"On TestFlight now"}],"\n",["$","p",null,{"children":["The XSaved Chrome extension is live today at ",["$","a",null,{"target":"_blank","rel":"noopener noreferrer nofollow","className":"inline-flex items-center gap-1 text-muted underline decoration-1 decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10","href":"https://xsaved.com","children":"xsaved.com"}],", and the iPhone app is in TestFlight beta."]}]]
