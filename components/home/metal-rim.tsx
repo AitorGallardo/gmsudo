@@ -79,13 +79,11 @@ const supportsWebGL = () => {
   return webglSupport;
 };
 
-const prefersReducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 /**
  * Static CSS stand-in for the shader ring: a hairline of warm gold around the
  * child, in the same `--gold` the rest of the site uses for its accents. It is
- * what visitors without WebGL (and those who asked for reduced motion) see,
- * and what everyone sees if the shader ever throws at runtime.
+ * what visitors without WebGL see, and what everyone sees if the shader ever
+ * throws at runtime. With WebGL available the shader is untouched.
  */
 const StaticRim = ({
   children,
@@ -154,8 +152,8 @@ interface MetalRimProps {
  * that reveal gate; the opaque child then shows from first paint and only the
  * ring fades in once the shader is ready.
  *
- * Without WebGL (or with reduced motion requested) the shader is never mounted
- * and a static CSS gold ring stands in — see `StaticRim` and `RimBoundary`.
+ * Without WebGL the shader is never mounted and a static CSS gold ring stands
+ * in — see `StaticRim` and `RimBoundary`. With WebGL, nothing changes.
  */
 export const MetalRim = ({
   children,
@@ -181,7 +179,7 @@ export const MetalRim = ({
 
   useEffect(() => {
     setMounted(true);
-    setShader(supportsWebGL() && !prefersReducedMotion());
+    setShader(supportsWebGL());
   }, []);
 
   useEffect(() => {

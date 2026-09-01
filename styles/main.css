@@ -635,7 +635,7 @@
 }
 
 /*
-* Static metal rim — the no-WebGL / reduced-motion / shader-failed stand-in for
+* Static metal rim — the no-WebGL / shader-failed stand-in for
 * metal-fx's animated gold ring (components/home/metal-rim.tsx). A conic gold
 * gradient painted *behind* the child, so the child's own transparent padding
 * (3px on the avatar, 2px on the ⌘K chip) reads as the ring, exactly where the

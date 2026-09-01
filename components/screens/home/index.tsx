@@ -7,7 +7,7 @@ import { AppThemeSwitcher } from "@/components/theme";
 const work = [
   {
     title: "Apartool",
-    description: "Full-Stack Engineer",
+    description: "Front-End Developer",
     meta: "2023 — Now",
     initials: "Ap",
     href: "https://apartool.com",
@@ -15,13 +15,13 @@ const work = [
   },
   {
     title: "Freelance",
-    description: "Product Engineer",
+    description: "Independent Product Developer",
     meta: "2023",
     initials: "Fr",
   },
   {
     title: "2Shapes",
-    description: "Software Engineer",
+    description: "Front-End Developer",
     meta: "2017 — 2022",
     initials: "2S",
     href: "https://2shapes.com",
@@ -148,8 +148,8 @@ export default function Home() {
         <a href="https://xsaved.com" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10">
           XSaved
         </a>{" "}
-        solo: a local-first bookmark manager for X. The Chrome extension is live with 1,000+ installs and paying subscribers, and the native iPhone app is about
-        to launch — one sync layer behind both.
+        solo: a local-first bookmark manager for X. The Chrome extension is live with 400+ users and a 4.3-star rating, and the native iPhone app is about to
+        launch — one sync layer behind both.
       </p>
 
       <p className="mt-4" data-play-body>
