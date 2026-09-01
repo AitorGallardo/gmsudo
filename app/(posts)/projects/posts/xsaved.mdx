@@ -1,10 +1,10 @@
 ---
 title: "XSaved"
-summary: "Turn your messy pile of X bookmarks into a library you'll actually use — search it, sort it, and find anything in seconds. On your browser, your iPhone, and your Mac."
-tags: ["Chrome Extension", "iOS", "macOS", "Productivity", "X / Twitter"]
+summary: "A bookmark manager for X that lives in your browser — search, folders, notes and tags for everything you've saved. Live on the Chrome Web Store with 1,000+ installs."
+tags: ["Chrome Extension", "Productivity", "Local-first", "X / Twitter"]
 time:
   created: "2024-12-18T00:00:00.000Z"
-  updated: "2026-08-02T01:14:29.511Z"
+  updated: "2026-09-01T22:21:03.211Z"
 media:
   image: "/images/xsaved-icon.png"
 pagesite:
@@ -13,9 +13,9 @@ hideOptions:
   hideUpdated: true
   hideReadingTime: true
 seo:
-  title: "XSaved — Bookmarks for X, done right"
-  description: "XSaved turns your endless list of X bookmarks into a searchable, organized library — in your browser, on iPhone, and on Mac, kept in sync."
-  keywords: ["x bookmarks", "twitter bookmarks", "bookmark manager", "chrome extension", "ios app", "mac app", "productivity"]
+  title: "XSaved — The bookmark manager X never built"
+  description: "A Chrome extension that turns your X bookmarks into a searchable, organized library — folders, notes, tags and one-click export. Live on the Chrome Web Store with 1,000+ installs, built solo by Aitor Gallardo."
+  keywords: ["x bookmarks", "twitter bookmarks", "bookmark manager", "chrome extension", "local-first", "productivity"]
 ---
 
 <div className="mt-8 mb-2 flex items-center gap-4">
@@ -31,48 +31,46 @@ seo:
 
 <Image
   src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-hero.webp`}
-  alt="XSaved — your X bookmarks, turned into a searchable, organized library"
+  alt="XSaved open inside X — the bookmark library as a searchable grid with folders, tags and notes"
 />
 
-If you've ever saved a tweet and never found it again, you already know the problem. X bookmarks are one endless list — no search, no way back to that one post you actually needed.
+If you've ever bookmarked a post on X and never found it again, you already know the problem: X keeps your bookmarks as one endless list with no real search. XSaved is the fix — a Chrome extension that turns that list into a library you can actually use, right inside X.
 
-XSaved fixes that. Your saves turn into a proper library you can search, sort, group, and come back to — with your own notes on anything worth a second look. It grew into a family: the extension in your browser, a native iPhone app, and a native Mac app, all backed by one shared sync layer. Save something at your desk and it shows up on your phone on its own.
+I designed, built and shipped it solo. It's live on the [Chrome Web Store](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn) with 1,000+ installs and a growing base of paying subscribers, and it's the desktop half of a product that now continues on the [iPhone](/projects/xsaved-ios).
 
-# On X — the Chrome extension
+# Find anything in seconds
 
 <Image
   src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-chrome.webp`}
-  alt="The XSaved library inside the browser, grouped by topic with instant search"
+  alt="The XSaved library grouped into folders, with search, filters and sorting across almost two thousand bookmarks"
 />
 
-Install it, open X, and your bookmarks become a clean, visual grid that groups by topic on its own. Type a word, a name, or a topic and the whole library narrows on the spot — filter by author, tag, or media type to close in further, and drop a private note on anything you want to remember. It's live today on the [Chrome Web Store](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn).
+Type a word, an `@author` or a `#tag` and the whole library narrows as you type. Filter to photos, videos or links, sort by date, or open an author and see everything you've ever saved from them. It stays instant at two thousand bookmarks and at twenty thousand.
 
-# On your iPhone — native iOS app
+# Organize it your way
 
-<Image
-  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios.webp`}
-  alt="XSaved for iOS — an image-first grid of saved bookmarks on iPhone"
-/>
+Folders without paying for X Premium — and a post can live in more than one. Add a private note to anything worth a second look, tag freely, and select a hundred posts at once to move them in one go. Your X folders come along for the ride, in the order you left them.
 
-The same bookmarks, native on iPhone in an image-first grid that feels right at home. Search keeps up as you type, the system share sheet saves from anywhere, and a home-screen widget keeps your library one tap away. It's a SwiftUI app in TestFlight beta now.
+# Yours to keep
 
-<p className="mt-3"><a href={`${process.env.NEXT_PUBLIC_BASE_PATH}/projects/xsaved-ios`} className="underline decoration-gray-a4 underline-offset-2">More about XSaved for iOS →</a></p>
+Everything is stored in your browser first, before anything else. Export the entire library to JSON, CSV or HTML in one click — it's never trapped inside a platform, this one included. No account is needed to use it.
 
-# On your Mac — native app + sync hub
+# One library, every device
 
-<Image
-  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-mac.webp`}
-  alt="XSaved for Mac — the dashboard overview of everything you've saved"
-/>
-
-On the Mac your whole library gets room to spread out: a dashboard that shows what you've saved at a glance, a spacious grid you can sort and filter, and a keyboard palette to jump straight to anything. It's also the hub of the shared sync backend the other apps talk to — native SwiftUI, in TestFlight beta.
-
-<p className="mt-3"><a href={`${process.env.NEXT_PUBLIC_BASE_PATH}/projects/xsaved-mac`} className="underline decoration-gray-a4 underline-offset-2">More about XSaved for Mac →</a></p>
+Turn on sync and your folders, notes and tags stay in step between Chrome and the iPhone app. Sign-in is a passkey — Face ID or Touch ID, no password to remember — and the extension keeps working offline, reconciling edits when you're back. Sync is a choice, never a requirement.
 
 # How it's built
 
-The extension is local-first: everything lives in the browser's IndexedDB, so there's no server in the loop and nothing to wait on. Full-text search stays instant across tens of thousands of bookmarks by leaning on the right indexes plus a layered cache that reuses work from one keystroke to the next. Optional cloud sync landed in v0.96 for people who want their library on more than one machine — the Mac app acts as the hub, and the iPhone and extension stay in step through it. It's private by default: no account to create, nothing handed to a server you don't control, and sync is always a choice, never a requirement.
+A Manifest V3 extension in React and TypeScript, injected into X itself so the library opens where your bookmarks already are. Bookmarks live in IndexedDB; the search engine is a four-pass matcher with BM25 scoring, tuned against a real library so results feel instant at any size. The optional sync backend uses passkey (WebAuthn) authentication and settles bulk edits with last-write-wins, so reorganizing a lot at once stays fast and predictable. X keeps moving its bookmarks around — most recently into a new History page — and the extension has tracked every change, with a public [changelog](https://xsaved.com/changelog) running from v0.45 to v0.98 this year alone.
+
+The same library also powers the lab work: [xsaved-rag](https://github.com/AitorGallardo/xsaved-rag), a hybrid keyword-and-vector search kept honest by an eval harness, and [xsaved-mcp](https://github.com/AitorGallardo/xsaved-mcp), which exposes your bookmarks as tools for Claude and other agents.
+
+# Also on iPhone
+
+XSaved for iPhone imports your bookmarks straight from X on the phone — no desktop or extension required — and shares this same sync layer. It's launching soon on the App Store.
+
+<p className="mt-3"><a href={`${process.env.NEXT_PUBLIC_BASE_PATH}/projects/xsaved-ios`} className="underline decoration-gray-a4 underline-offset-2">More about XSaved for iPhone →</a> <span className="text-muted">· there's also an earlier native <a href={`${process.env.NEXT_PUBLIC_BASE_PATH}/projects/xsaved-mac`} className="underline decoration-gray-a4 underline-offset-2">Mac companion</a>.</span></p>
 
 # Get it
 
-XSaved is live on the [Chrome Web Store](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn), with the iPhone and Mac apps in TestFlight beta. Add it, open your bookmarks on X, and your library fills in as it syncs. See it all at [xsaved.com](https://xsaved.com).
+Free on the [Chrome Web Store](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn). Install it, open your bookmarks on X, and the library fills in on its own. Everything else lives at [xsaved.com](https://xsaved.com).

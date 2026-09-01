@@ -635,6 +635,39 @@
 }
 
 /*
+* Static metal rim — the no-WebGL / reduced-motion / shader-failed stand-in for
+* metal-fx's animated gold ring (components/home/metal-rim.tsx). A conic gold
+* gradient painted *behind* the child, so the child's own transparent padding
+* (3px on the avatar, 2px on the ⌘K chip) reads as the ring, exactly where the
+* shader would have drawn it. Colors mirror the gold preset override. Unlayered
+* so it sits above Tailwind's utilities.
+*/
+
+.metal-rim-static {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+}
+
+.metal-rim-static::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background: conic-gradient(from 200deg, #9a6412, #ffe7a0 22%, #f4b400 40%, #7a4d00 58%, #ffcf4d 76%, #fff3c4 88%, #9a6412);
+  border-radius: inherit;
+  box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+
+.metal-rim-static-circle {
+  border-radius: 9999px;
+}
+
+.metal-rim-static-button {
+  border-radius: 6px;
+}
+
+/*
 * iPhone / touch refinements. Unlayered and last in the file so they land above
 * Tailwind's utility layer where they must win.
 */

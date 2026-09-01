@@ -16,7 +16,7 @@ interface Line {
 
 const sections: Record<string, string[]> = {
   work: ["apartool", "freelance", "2shapes"],
-  projects: ["xsaved", "tabknight"],
+  projects: ["xsaved", "xsaved-ios", "tabknight"],
   lab: ["xsaved-mcp", "xsaved-rag", "xsaved-topics", "megaport-network-visualizer"],
   earlier: ["bbbookmarks"],
 };
@@ -25,6 +25,7 @@ type Target = { kind: "internal"; path: string } | { kind: "external"; url: stri
 
 const openTargets: Record<string, Target> = {
   xsaved: { kind: "internal", path: "/projects/xsaved" },
+  "xsaved-ios": { kind: "internal", path: "/projects/xsaved-ios" },
   tabknight: { kind: "internal", path: "/projects/tabknight" },
   bbbookmarks: { kind: "internal", path: "/projects/bbbookmarks" },
   x: { kind: "external", url: "https://x.com/gmsudo" },
@@ -36,7 +37,7 @@ const HELP: string[] = [
   "help    — this list",
   "whoami  — who's behind this",
   "ls      — list sections (try: ls projects)",
-  "open    — open <xsaved|tabknight|bbbookmarks|x|github|cv>",
+  "open    — open <xsaved|xsaved-ios|tabknight|bbbookmarks|x|github|cv>",
   "palette — open the command palette",
   "theme   — toggle light / dark",
   "play    — loosen the page",
@@ -150,7 +151,7 @@ export const Terminal = () => {
         for (const line of HELP) push("out", line);
         break;
       case "whoami":
-        push("out", "aitor gallardo — full-stack & ai engineer. @gmsudo.");
+        push("out", "aitor gallardo — product engineer, full-stack & ai. @gmsudo.");
         break;
       case "ls": {
         const section = args[0]?.toLowerCase();
@@ -167,7 +168,7 @@ export const Terminal = () => {
         const key = args[0]?.toLowerCase();
         const target = key ? openTargets[key] : undefined;
         if (!key) {
-          push("out", "usage: open <xsaved|tabknight|bbbookmarks|x|github|cv>");
+          push("out", "usage: open <xsaved|xsaved-ios|tabknight|bbbookmarks|x|github|cv>");
         } else if (!target) {
           push("out", `open: not found: ${key} (try: ${Object.keys(openTargets).join(", ")})`);
         } else if (target.kind === "internal") {

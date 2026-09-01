@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Aitor Gallardo — full-stack & AI engineer";
+export const alt = "Aitor Gallardo — product engineer, full-stack & AI";
 export const size = {
   width: 1200,
   height: 630,
@@ -60,7 +60,7 @@ export default function OpengraphImage() {
             fontWeight: 400,
           }}
         >
-          @gmsudo · full-stack & AI engineer
+          @gmsudo · product engineer · full-stack & AI
         </div>
       </div>
 

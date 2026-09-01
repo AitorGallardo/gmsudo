@@ -32,10 +32,17 @@ const work = [
 const projects = [
   {
     title: "XSaved",
-    description: "The bookmark manager X never built",
-    pills: ["chrome", "ios", "macos"],
+    description: "Bookmark manager for X — live on the Chrome Web Store",
+    pill: "chrome",
     icon: "/images/xsaved-icon.png",
     href: "/projects/xsaved",
+  },
+  {
+    title: "XSaved for iPhone",
+    description: "Your X bookmarks, native on iPhone — launching soon",
+    pill: "ios",
+    icon: "/images/xsaved-ios-icon.png",
+    href: "/projects/xsaved-ios",
   },
   {
     title: "TabKnight",
@@ -129,11 +136,11 @@ export default function Home() {
         <a href="https://x.com/gmsudo" className="text-muted underline decoration-gray-a6 underline-offset-2 transition-colors hover:text-foreground">
           @gmsudo
         </a>{" "}
-        <span className="text-muted">·</span> full-stack &amp; AI engineer.
+        <span className="text-muted">·</span> product engineer.
       </p>
 
       <p className="mt-5" data-play-body>
-        I ship products end-to-end — design, frontend, backend, and the AI in between.
+        Full-stack &amp; AI. I take products from idea to shipped — design, frontend, backend, native apps, and the AI in between.
       </p>
 
       <p className="mt-4" data-play-body>
@@ -141,7 +148,8 @@ export default function Home() {
         <a href="https://xsaved.com" className="underline decoration-gray-a6 underline-offset-2 transition-colors hover:decoration-gray-a10">
           XSaved
         </a>{" "}
-        solo: a local-first, AI-organized bookmark manager for X — a Chrome extension, native iOS and Mac apps, and the sync spine behind them.
+        solo: a local-first bookmark manager for X. The Chrome extension is live with 1,000+ installs and paying subscribers, and the native iPhone app is about
+        to launch — one sync layer behind both.
       </p>
 
       <p className="mt-4" data-play-body>

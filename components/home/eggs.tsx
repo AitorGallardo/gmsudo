@@ -62,12 +62,12 @@ export const Eggs = () => {
     },
     {
       label: "XSaved",
-      hint: "project",
+      hint: "project — chrome extension",
       run: () => router.push("/projects/xsaved"),
     },
     {
-      label: "XSaved for iOS",
-      hint: "project",
+      label: "XSaved for iPhone",
+      hint: "project — ios app",
       run: () => router.push("/projects/xsaved-ios"),
     },
     {

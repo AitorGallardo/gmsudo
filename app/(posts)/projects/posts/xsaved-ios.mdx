@@ -1,71 +1,80 @@
 ---
-title: "XSaved for iOS"
-summary: "A native iPhone app for your X bookmarks — browse and search everything you've saved, wherever you are."
-tags: ["iOS", "iPhone", "Mobile App", "X / Twitter"]
+title: "XSaved for iPhone"
+summary: "Your X bookmarks as a native iPhone library — imported straight from X, tidied with a swipe, searchable by meaning. Launching soon on the App Store."
+tags: ["iOS", "SwiftUI", "On-device AI", "X / Twitter"]
 time:
   created: "2026-06-21T00:00:00.000Z"
-  updated: "2026-07-24T08:28:58.749Z"
+  updated: "2026-09-01T22:31:47.438Z"
 media:
   image: "/images/xsaved-ios-icon.png"
 pagesite:
-  url: "https://xsaved.com"
+  url: "https://ios.xsaved.com"
 hideOptions:
   hideUpdated: true
   hideReadingTime: true
 seo:
-  title: "XSaved for iOS — Your X bookmarks on iPhone"
-  description: "A fast, native iPhone app that turns your X bookmarks into a library you can browse and search anywhere."
-  keywords: ["x bookmarks", "twitter bookmarks", "ios app", "iphone", "bookmark manager"]
+  title: "XSaved for iPhone — The X bookmark library for iPhone"
+  description: "A native SwiftUI app that imports your X bookmarks directly on the phone — no desktop, extension or X Premium — and turns them into a library you can tidy with a swipe and search by meaning. Built solo by Aitor Gallardo."
+  keywords: ["x bookmarks", "twitter bookmarks", "ios app", "iphone", "swiftui", "bookmark manager", "on-device ai"]
 ---
 
 <div className="mt-8 mb-2 flex items-center gap-4">
   <img
     src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-icon.png`}
-    alt="XSaved for iOS icon"
+    alt="XSaved for iPhone icon"
     width={72}
     height={72}
     className="rounded-2xl"
   />
-  <p className="m-0 font-medium">Your X bookmarks, native on iPhone.</p>
+  <p className="m-0 font-medium">The X bookmark library for iPhone.</p>
 </div>
 
 <Image
-  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios.webp`}
-  alt="XSaved for iOS — the home feed of saved bookmarks"
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-library.webp`}
+  alt="XSaved for iPhone — the home library with folder chips over a masonry grid, and search narrowing the library as you type"
 />
 
-The same bookmarks you save on X, now in a native app you can flick through anywhere.
+The [Chrome extension](/projects/xsaved) needs a desktop. The iPhone app needs nothing else: sign in to X inside the app and your bookmarks import right there on the phone — no extension, no computer, no X Premium. From there they stop being a list and become a library: a light, image-first feed, your folders as chips along the top, and search that keeps up with your thumbs.
 
-# A feed worth scrolling
+It's a native SwiftUI app built on iOS 26's new Liquid Glass design language, and it's about to launch on the App Store.
 
-Your saves are laid out in a clean, image-first grid that feels right at home on iPhone. Photos, quotes, threads — all in one calm, browsable place.
-
-# Search that keeps up
+# Tidy Up
 
 <Image
-  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-search.webp`}
-  alt="XSaved for iOS — searching saved bookmarks"
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-tidy.webp`}
+  alt="Tidy Up — a stack of bookmark cards; swipe right to keep, swipe left to archive, or file one into a folder"
 />
 
-Looking for something specific? Start typing and your whole library narrows down on the spot.
+Years of saves, twenty cards at a time: swipe to keep, swipe to archive, or file a card straight into a folder. Undo if you were too quick. A pile that took years to build gets sorted in a couple of sessions of idle thumb work.
 
-# Every post, the full picture
+# Search that understands you
+
+Keyword search is free and instant. Pro adds search by meaning — describe what you half-remember, like "that thread about pricing a side project", and it finds the post even when none of those words appear in it. Related saves surface the posts you saved for the same reason, and Smart topics group the whole library on their own.
 
 <Image
-  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-detail.webp`}
-  alt="XSaved for iOS — a single bookmark in full"
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-topics.webp`}
+  alt="Smart clusters grouping the library by the day you saved, and a cluster opened with its on-device summary"
 />
 
-Tap any bookmark to open it in full — the words, the media, who posted it — without bouncing back out to X.
+# Notes, tags and authors
 
-# Saved anywhere, here on its own
+<Image
+  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/images/xsaved-ios-notes.webp`}
+  alt="Editing a private note on a saved post, and the Authors screen ranking the accounts you save most"
+/>
 
-Save a bookmark from the extension on your laptop and it shows up on your phone by itself — live sync keeps every device on the same page. Save from anywhere in the system with the share sheet, and keep your library one tap away with a home-screen widget.
+Add a private note to any post so future-you knows why it was worth saving. Open Authors to see who you save most, each with a one-line description written on the device itself.
+
+# Local by default, synced by choice
+
+Everything lives on the phone. Turn on sync and the free Chrome extension shares the same folders, notes and tags — sign in once with a passkey and Face ID, no password. Or never turn it on; the app is complete on its own.
 
 # How it's built
 
-It's a native SwiftUI app targeting iOS 26, currently in TestFlight beta. It talks to the same sync layer as the extension and the Mac app, so a bookmark saved on another device appears here on its own — no manual refresh. Saving works straight from the system share sheet, and a home-screen widget keeps the library one tap away.
+Native SwiftUI targeting iOS 26 — the floating Liquid Glass tab bar and surfaces are the real system APIs, not imitations — with a plain model-view architecture on `@Observable` and bookmarks stored in SQLite. The import engine connects to X from an app-owned browser session on the device, so nothing about your account passes through a server. The AI is on-device too: Apple's Foundation Models write the cluster and author summaries, with no API keys and no data leaving the phone. Sync and search by meaning share the backend built for the extension.
 
-# On TestFlight now
+The first version froze on a real library, so the library view was rebuilt around a masonry layout that re-measures and re-flows only the cards that actually changed — the difference between a demo and something you'd scroll every day.
 
-The XSaved Chrome extension is live today at [xsaved.com](https://xsaved.com), and the iPhone app is in TestFlight beta.
+# Launching soon
+
+Join the launch list at [xsaved.com/launch-list](https://xsaved.com/launch-list) and see the full story at [ios.xsaved.com](https://ios.xsaved.com). The Chrome extension is [live today](https://chromewebstore.google.com/detail/xsaved/nefnhjnjkpimffifpbpdogjoglpjihdn).

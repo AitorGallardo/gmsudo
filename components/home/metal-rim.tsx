@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { MetalFx, PRESETS } from "metal-fx";
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState } from "react";
 
 /**
  * Richen metal-fx's bundled `gold` preset into an unmistakable warm gold.
@@ -46,6 +46,85 @@ if (!(PRESETS.gold as GoldFlag)[GOLD_OVERRIDDEN]) {
   (PRESETS.gold as GoldFlag)[GOLD_OVERRIDDEN] = true;
 }
 
+/**
+ * Can this browser actually hand us a WebGL context?
+ *
+ * metal-fx creates its context lazily inside a React effect and throws
+ * `metal-fx: WebGL not supported` when `getContext("webgl")` returns null —
+ * which happens with hardware acceleration off, under some privacy/enterprise
+ * policies, in a few embedded webviews, and on a GPU blocklist. A throw inside
+ * an effect unmounts the entire React tree, so an unlucky visitor used to get
+ * a blank page over a decorative ring. Probe once, up front, so those visitors
+ * get the static gold ring and never touch the shader path.
+ */
+let webglSupport: boolean | null = null;
+
+const supportsWebGL = () => {
+  if (webglSupport !== null) return webglSupport;
+  // Dev-only switch to eyeball the static rim in a browser that has WebGL:
+  // append `?rim=static` to any page. Compiled out of the production export.
+  if (process.env.NODE_ENV !== "production" && new URLSearchParams(window.location.search).get("rim") === "static") {
+    webglSupport = false;
+    return webglSupport;
+  }
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl");
+    webglSupport = !!gl;
+    // Release the probe context immediately; browsers cap live contexts.
+    (gl as WebGLRenderingContext | null)?.getExtension("WEBGL_lose_context")?.loseContext();
+  } catch {
+    webglSupport = false;
+  }
+  return webglSupport;
+};
+
+const prefersReducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Static CSS stand-in for the shader ring: a hairline of warm gold around the
+ * child, in the same `--gold` the rest of the site uses for its accents. It is
+ * what visitors without WebGL (and those who asked for reduced motion) see,
+ * and what everyone sees if the shader ever throws at runtime.
+ */
+const StaticRim = ({
+  children,
+  variant,
+  className,
+}: {
+  children: ReactNode;
+  variant: MetalFxVariant;
+  className?: string;
+}) => <span className={`metal-rim-static ${variant === "circle" ? "metal-rim-static-circle" : "metal-rim-static-button"}${className ?? ""}`}>{children}</span>;
+
+interface RimBoundaryProps {
+  fallback: ReactNode;
+  children: ReactNode;
+}
+
+/**
+ * Error boundary around the shader mount. Feature detection catches the
+ * common "no WebGL at all" case before we ever render metal-fx; this catches
+ * everything else — shader compile failures on odd drivers, a context that
+ * exists but cannot allocate, a future metal-fx throw we did not predict —
+ * and swaps in the static ring instead of taking the page down.
+ */
+class RimBoundary extends Component<RimBoundaryProps, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    if (process.env.NODE_ENV !== "production") console.warn("metal-fx failed; using the static rim", error);
+  }
+
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 interface MetalRimProps {
   children: ReactNode;
   variant?: MetalFxVariant;
@@ -74,6 +153,9 @@ interface MetalRimProps {
  * that wrap real content pass `!opacity-100 !visible` via `className` to defeat
  * that reveal gate; the opaque child then shows from first paint and only the
  * ring fades in once the shader is ready.
+ *
+ * Without WebGL (or with reduced motion requested) the shader is never mounted
+ * and a static CSS gold ring stands in — see `StaticRim` and `RimBoundary`.
  */
 export const MetalRim = ({
   children,
@@ -93,10 +175,14 @@ export const MetalRim = ({
   // the shader never mounts against a 0–2px layout (initial paint, a suspended
   // tab, or a not-yet-laid-out ancestor).
   const [sized, setSized] = useState(false);
+  const [shader, setShader] = useState(false);
   const hostRef = useRef<HTMLSpanElement>(null);
   const { resolvedTheme } = useTheme();
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    setShader(supportsWebGL() && !prefersReducedMotion());
+  }, []);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -116,6 +202,14 @@ export const MetalRim = ({
     return () => ro.disconnect();
   }, [sized]);
 
+  const fallback = (
+    <StaticRim variant={variant} className={className}>
+      {children}
+    </StaticRim>
+  );
+
+  if (mounted && !shader) return fallback;
+
   if (!mounted || !sized)
     return (
       <span ref={hostRef} className={className} style={{ display: "inline-flex" }}>
@@ -124,17 +218,19 @@ export const MetalRim = ({
     );
 
   return (
-    <MetalFx
-      variant={variant}
-      preset={preset}
-      strength={strength}
-      disableGlow={disableGlow}
-      borderRadius={borderRadius}
-      ringCssPx={ringCssPx}
-      theme={resolvedTheme === "light" ? "light" : "dark"}
-      className={className}
-    >
-      {children}
-    </MetalFx>
+    <RimBoundary fallback={fallback}>
+      <MetalFx
+        variant={variant}
+        preset={preset}
+        strength={strength}
+        disableGlow={disableGlow}
+        borderRadius={borderRadius}
+        ringCssPx={ringCssPx}
+        theme={resolvedTheme === "light" ? "light" : "dark"}
+        className={className}
+      >
+        {children}
+      </MetalFx>
+    </RimBoundary>
   );
 };

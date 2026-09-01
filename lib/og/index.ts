@@ -1,8 +1,8 @@
 import type { Metadata } from "next/types";
 
-const title = "Aitor Gallardo — full-stack & AI engineer";
+const title = "Aitor Gallardo — product engineer, full-stack & AI";
 const description =
-  "Aitor Gallardo (@gmsudo) ships products end-to-end. Currently building XSaved — a local-first, AI-organized bookmark manager for X across Chrome, iOS, and Mac.";
+  "Aitor Gallardo (@gmsudo) takes products from idea to shipped — design, frontend, backend, native apps, and the AI in between. Building XSaved: a local-first bookmark manager for X, live on Chrome and coming to iPhone.";
 
 // `basePath` (next.config.mjs) is automatically prepended by Next.js when it resolves
 // file-convention metadata routes (icon, opengraph-image) against `metadataBase`. Since
@@ -18,7 +18,7 @@ export const OpenGraph: Metadata = {
     template: "%s",
   },
   description,
-  keywords: ["Aitor Gallardo", "gmsudo", "Full-Stack Engineer", "AI Engineer", "XSaved", "TabKnight", "Portfolio"],
+  keywords: ["Aitor Gallardo", "gmsudo", "Product Engineer", "Full-Stack Engineer", "AI Engineer", "iOS Developer", "XSaved", "TabKnight", "Portfolio"],
   openGraph: {
     type: "website",
     locale: "en_US",
