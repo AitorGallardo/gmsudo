@@ -62,6 +62,13 @@ The CV button and terminal's `open cv` command use
 `public/documents/cv.pdf` identical to it so previously shared links also serve
 the current CV.
 
+## Publishing
+
+The public domain is served by the Cloudflare Pages project `gmsudo`. Pushing
+`main` runs the GitHub Pages workflow, but does not update Cloudflare. After a
+successful production build, publish `out/` with
+`bunx wrangler pages deploy out --project-name gmsudo --branch main`.
+
 ## Lineage
 
 The third life of this site: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) → [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take) → gmsudo, now on its own domain at [gmsudo.com](https://gmsudo.com).
