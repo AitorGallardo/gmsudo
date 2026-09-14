@@ -55,6 +55,13 @@ bun run dev      # local dev
 bun run build    # lint chain + static export to out/
 ```
 
+## CV download
+
+The CV button and terminal's `open cv` command use
+`public/documents/aitorgallardo_gmsudo_cv.pdf`. Keep
+`public/documents/cv.pdf` identical to it so previously shared links also serve
+the current CV.
+
 ## Lineage
 
 The third life of this site: [v0](https://aitorgallardo.github.io/portfolio-v0/) (Astro) → [v1](https://aitorgallardo.github.io/portfolio-v1/) (first Next.js take) → gmsudo, now on its own domain at [gmsudo.com](https://gmsudo.com).

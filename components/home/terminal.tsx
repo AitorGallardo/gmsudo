@@ -30,7 +30,10 @@ const openTargets: Record<string, Target> = {
   bbbookmarks: { kind: "internal", path: "/projects/bbbookmarks" },
   x: { kind: "external", url: "https://x.com/gmsudo" },
   github: { kind: "external", url: "https://github.com/aitorgallardo" },
-  cv: { kind: "external", url: `${basePath}/documents/cv.pdf` },
+  cv: {
+    kind: "external",
+    url: `${basePath}/documents/aitorgallardo_gmsudo_cv.pdf`,
+  },
 };
 
 const HELP: string[] = [

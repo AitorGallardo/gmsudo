@@ -36,9 +36,9 @@ const links = [
   { label: "Email", href: "mailto:aitorgamu@gmail.com", icon: <MailIcon /> },
   {
     label: "CV",
-    href: `${basePath}/documents/cv.pdf`,
+    href: `${basePath}/documents/aitorgallardo_gmsudo_cv.pdf`,
     icon: <FileIcon />,
-    download: true,
+    download: "aitorgallardo_gmsudo_cv.pdf",
   },
 ];
 
